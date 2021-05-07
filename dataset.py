@@ -3,6 +3,15 @@ import pandas as pd
 from torch.utils.data import Dataset, DataLoader
 from PIL import Image
 from torchvision import transforms
+
+class Vocabulary_simple(self):
+    def __init__(self):
+        self.word_to_index = word_to_index
+
+        self.index_to_word = {v:k for k, v in self.word_to_index.items()
+    self.
+
+
 class Flickr8kDataset(Dataset):
 
 	def __init__(self, dataset_folder='./dataset',transform=None):
