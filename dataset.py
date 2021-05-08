@@ -9,8 +9,6 @@ class Vocabulary_simple(self):
         self.word_to_index = word_to_index
 
         self.index_to_word = {v:k for k, v in self.word_to_index.items()
-    self.
-
 
 class Flickr8kDataset(Dataset):
 
