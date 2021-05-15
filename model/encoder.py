@@ -2,32 +2,39 @@ import torch
 from torch import nn
 
 class Encoder(nn.Module):
-	"""
-	Encoder
-
-	This class is the Encoder for the attention network that is similar to the vanilla encoders. 
-	In the ‘__init__’ function we just store the parameters and create an LSTM layer. 
-	In the forward function, we just pass the input through the LSTM with the provided hidden state. 
-	The ‘init_hidden’ function is to be called before passing sentence through the LSTM to initialize the hidden state. 
-	Note that, the hidden state has to be two vectors, as LSTMs have two vectors i.e. hidden activation and the memory cell, 
-	in contrast with GRUs that is used in the PyTorch Tutorial. 
-	The first dimension of the hidden state is 2 for bidirectional LSTM (as bidirectional LSTMs are two LSTMs, 
-	one of which inputs the words in a forward manner, while the other one takes the words in reverse order) 
-	the second dimension is the batch size, which we take here to be 1 and the last one is the desired output size. 
-	Note that, I haven’t added any embedding for simplicity of the code.
-	"""
 	def __init__(self, input_size, hidden_size, bidirectional=True):
 		super(Encoder,self).__init__()
 		self.hidden_size = hidden_size
 		self.input_size = input_size
 		self.bidirectional = bidirectional
 
-		self.lstm = nn.LSTM(input_size, hidden_size, bidirectional=self.bidirectional)
+		self.lstm = nn.LSTM(input_size = self.input_size, hidden_size = self.hidden_size, bidirectional=self.bidirectional, num_layers = 1)
 	
-	def forward(self,inputs, hidden):
-		output, hidden = self.lstm(inputs.view(1,1,self.input_size), hidden)
-		return output, hidden
+	def forward(self, inputs, hidden):
+		"""
+		For the LSTM:
+
+		inputs: (seq_len, batch, input_size)
+		hidden: tuple (h_0, c_0) => 	(num_layers * num_directions, batch, hidden_size) ,
+										(num_layers * num_directions, batch, hidden_size)
+		"""
+		output, hidden_state = self.lstm(inputs.view(1,1,self.input_size), hidden)
+
+		# output: (seq_len, batch, num_directions * hidden_size)
+		# hidden: (num_layers * num_directions, batch, hidden_size): tensor containing the hidden state for t = seq_len.
+		return output, hidden_state
 	
 	def init_hidden(self):
+		# (num_layers * num_directions, batch, hidden_size), (num_layers * num_directions, batch, hidden_size)
 		return (torch.zeros(1 + int(self.bidirectional), 1, self.hidden_size),
 			torch.zeros(1 + int(self.bidirectional), 1, self.hidden_size))
+
+
+if __name__ == "__main__":
+	rnn = nn.LSTM(input_size=10, hidden_size=20, num_layers=2)
+	input = torch.randn(5, 3, 10)
+	h0 = torch.randn(2, 3, 20)
+	c0 = torch.randn(2, 3, 20)
+	output, (hn, cn) = rnn(input, (h0, c0))
+	print(output) # (5,3,20)
+	print(hn.shape,cn.shape) # (2,3,20)
