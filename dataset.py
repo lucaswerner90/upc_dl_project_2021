@@ -6,7 +6,7 @@ from torch.utils.data import Dataset, DataLoader
 from torch.nn.utils.rnn import pad_sequence
 from PIL import Image
 from torchvision import transforms
-import gensim
+
 
 class Vocabulary():
     def __init__(self):

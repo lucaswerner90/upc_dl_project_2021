@@ -2,4 +2,3 @@ torch
 pillow
 pandas
 nltk
-gensim
