@@ -1,6 +1,6 @@
 ## In this file few feature extraction functions are defined. Such functions don't have input arguments
 #  and return a Composition of transforms to be applied to the database as well as a feature extraction module.
-#  The feature extraction module, given an input of a tensor with a badge of images, returns a batch of tensors of dimesion (bsz,num_feat,L) where L are the number 
+#  The feature extraction module, given as input a tensor with a badge of cropped and normalized RGB images, returns a batch of tensors of dimesion (bsz,num_feat,L) where L are the number 
 #  of embeddings of the image (each one roughly corresponding to a patch of the image) 
 
 ## Ojo, que mejor se debería hacer uns tranpose de los tensores de salida. Eso segun se haya definido el attention y el decoder.
