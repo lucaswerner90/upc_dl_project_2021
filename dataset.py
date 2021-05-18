@@ -22,7 +22,7 @@ class Vocabulary():
     def tokenize(text):
         return nltk.word_tokenize(text)
     
-    def build_vocabulary(self,sentence_list,reduce=False, max_size=5000):
+    def build_vocabulary(self,sentence_list,reduce=True, max_size=5000):
 
         idx = 4 #starting idx
         nltk.download("punkt")
@@ -37,11 +37,16 @@ class Vocabulary():
             items=list(wtoi.items())
             items.sort(key=lambda x:x[1],reverse=True)
             items=items[:max_size]
-            wtoi = {k:v for k,v in items}
-            self.word_to_index={**self.word_to_index,**wtoi}
+            itow={}
+            idx=4
+            for k,v in items:
+                itow[idx]=k
+                idx+=1
+            #wtoi = {k:v for k,v in items}
+            self.index_to_word={**self.index_to_word,**itow}
         else:
-            self.word_to_index={**self.word_to_index,**wtoi}
-        self.index_to_word = {v:k for k, v in self.word_to_index.items()}
+            self.index_to_word={**self.index_to_word,**wtoi}
+        self.word_to_index = {v:k for k, v in self.index_to_word.items()}
 
     def numericalize(self,text):
         tok_text = self.tokenize(text)
