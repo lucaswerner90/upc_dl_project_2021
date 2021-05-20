@@ -1,0 +1,5 @@
+Doubts:
+-Vocabulary standard or from current text?
+-Coverage of vocabulary used over current captions
+-Vocabulary simple, BPE. 
+-Word embedding
