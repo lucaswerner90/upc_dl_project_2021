@@ -1,14 +1,64 @@
-## In this file few feature extraction functions are defined. Such functions don't have input arguments
-#  and return a Composition of transforms to be applied to the database as well as a feature extraction module.
-#  The feature extraction module, given as input a tensor with a badge of cropped and normalized RGB images, returns a batch of tensors of dimesion (bsz,num_feat,L) where L are the number 
-#  of embeddings of the image (each one roughly corresponding to a patch of the image) 
-
-## Ojo, que mejor se debería hacer uns tranpose de los tensores de salida. Eso segun se haya definido el attention y el decoder.
-
+# In this file the class Encoder defined. The class is an nn module that implements feature extraction from images by means of 
+# the convolutional base of a pre-trained VGG-16 Neural Network. 
+# The feature extraction module, given as input a tensor with a badge of cropped and normalized RGB images, returns a batch of tensors of 
+# dimesion (bsz,L,num_feat) where L are the number of embeddings of the image (each one roughly corresponding to a patch of the image)
+#  
+# The argument num_emb of the constructor defines the number embeddings that will be extracted from the image. It can only take only the values 49 or 196.
+# Default value is 196.    
+#    
+# 
+## Ojo, que mejor se debería hacer uns transpose de los tensores de salida. Eso segun se haya definido el attention y el decoder.
+## De momento no incluyo el tema de las transformadas.
+#   Example for using for inference:
+#   encoder = Encoder(num_emb_196=True)
+#	encoder.eval()      
+#   encoder.to(device)
+#   for param in encoder.parameters():  # Freeze All layers 
+#          param.requires_grad = False
+#
 
 import torchvision.transforms as transforms
 import torchvision.models as models
 import torch.nn as nn
+
+
+class Encoder(nn.Module):
+
+    def __init__(self,num_emb_196=True):
+        super().__init__()
+
+        pretrained_model = models.vgg16(pretrained=True)
+        if num_emb_196==True:
+            self.conv_base = pretrained_model.features
+            print("Extracting 196 feat vect from the image")
+        else:
+            self.conv_base = nn.Sequential(*list(pretrained_model.features)[0:24])
+            print("Extracting 49 feat vect from the image")
+
+        self.flat = nn.Flatten(2,3)
+
+    def forward(self, x):
+        x = self.conv_base(x)
+        x = self.flat(x)
+        y =  x.transpose(1,2)
+        return y
+
+    # Obtain the parameters of the tensor in terms of:
+    # 1) batch size
+    # 2) number of channels
+    # 3) spatial "height"
+    # 4) spatial "width"
+#        bsz, nch, height, width = x.shape
+
+    # Flatten the feature map with the view() operator 
+    # within each batch sample
+
+    #    x = x.view(bsz,-1)
+    #    y = self.mlp(x)    # No sé perquè aquí fa servir la y enlloc de la x? Passaria algo???
+    #    return y
+
+
+
 
 def get_feat_extractor_Vgg_L49():
     """
