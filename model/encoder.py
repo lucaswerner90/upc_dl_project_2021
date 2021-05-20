@@ -1,40 +1,40 @@
-import torch
 from torch import nn
-
 class Encoder(nn.Module):
-	def __init__(self, input_size, hidden_size, bidirectional=True):
-		super(Encoder,self).__init__()
-		self.hidden_size = hidden_size
-		self.input_size = input_size
-		self.bidirectional = bidirectional
+    def __init__(self, vocab_size, hidden_size, n_layers=1, dropout=0):
+        super(EncoderRNN, self).__init__()
+        self.n_layers = n_layers
+        self.hidden_size = hidden_size
+        self.embedding = nn.Embedding(num_embeddings=vocab_size, embedding_dim=hidden_size)
 
-		self.lstm = nn.LSTM(input_size = self.input_size, hidden_size = self.hidden_size, bidirectional=self.bidirectional, num_layers = 1)
-	
-	def forward(self, inputs, hidden):
-		"""
-		For the LSTM:
+        self.rnn = nn.LSTM(hidden_size, hidden_size, n_layers,
+                          dropout=(0 if n_layers == 1 else dropout), 
+                          bidirectional=True)
+        
+        # Since we're using a bidirectional LSTM, we will map
+        # forward and backward hidden states to just one
+        self.fc_hidden = nn.Linear(hidden_size*2, hidden_size)
 
-		inputs: (seq_len, batch, input_size)
-		hidden: tuple (h_0, c_0) => 	(num_layers * num_directions, batch, hidden_size) ,
-										(num_layers * num_directions, batch, hidden_size)
-		"""
-		output, hidden_state = self.lstm(inputs.view(1,1,self.input_size), hidden)
+    def forward(self, x):
+        # Convert word indexes to embeddings
+        embedded = self.embedding(x)
 
-		# output: (seq_len, batch, num_directions * hidden_size)
-		# hidden: (num_layers * num_directions, batch, hidden_size): tensor containing the hidden state for t = seq_len.
-		return output, hidden_state
-	
-	def init_hidden(self):
-		# (num_layers * num_directions, batch, hidden_size), (num_layers * num_directions, batch, hidden_size)
-		return (torch.zeros(1 + int(self.bidirectional), 1, self.hidden_size),
-			torch.zeros(1 + int(self.bidirectional), 1, self.hidden_size))
+        # https://pytorch.org/docs/stable/generated/torch.nn.LSTM.html
+        # 
+        # encoder_states: output of shape (seq_len, batch, num_directions * hidden_size)
+        # tensor containing the output features (h_t) from the last layer of the LSTM, for each t.
+        #
+        # h_n of shape (num_layers * num_directions, batch, hidden_size)
+        # c_n of shape (num_layers * num_directions, batch, hidden_size)
+        encoder_states, (hidden, cell) = self.rnn(embedded)
+        
+        # (2, N, hidden_size)
+        # the hidden contains the most right state
+        hidden = self.fc_hidden(
+            torch.cat((hidden[0:1], hidden[1:2]),dim=2)
+        )
+        cell = self.fc_hidden(
+            torch.cat((cell[0:1], cell[1:2]),dim=2)
+        )
 
-
-if __name__ == "__main__":
-	rnn = nn.LSTM(input_size=10, hidden_size=20, num_layers=2)
-	input = torch.randn(5, 3, 10)
-	h0 = torch.randn(2, 3, 20)
-	c0 = torch.randn(2, 3, 20)
-	output, (hn, cn) = rnn(input, (h0, c0))
-	print(output) # (5,3,20)
-	print(hn.shape,cn.shape) # (2,3,20)
+        # the encoder states in the Attention paper is the h_j
+        return encoder_states, hidden, cell
