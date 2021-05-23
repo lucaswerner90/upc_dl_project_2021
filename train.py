@@ -36,7 +36,7 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device)
 			print(f'| epoch {epoch:3d} | {i:5d}/{len(train_loader):5d} batches | lr {lr:.4f} | ms/batch {elapsed * 1000 / log_interval:5.2f} | loss {cur_loss:5.2f} | ppl {math.exp(cur_loss):8.2f}')
 			start_time=time.time()
 
-def evaluate(dataiter):
+def evaluate(model,dataiter):
 	model.eval()
 
 	total_loss = 0.
@@ -47,7 +47,7 @@ def evaluate(dataiter):
 			img = img.to(device)
 			target = target.to(device)
 			#TODO: Adapt this piece of code to Encoder and decoder implementation
-			features = model.encoder
+			features = model.encoder...
 			output, attentions = model.decoder.generate_caption(features, vocab=dataset.vocab)
 
 			caption = ' '.join(output)
