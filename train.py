@@ -16,8 +16,8 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device)
 		target = target.to(device)
 		
 		optimizer.zero_grad()
-
-		output, attentions = model(img, target)
+		#TODO: introduce for loop to make sentence
+		output, attentions, _ = model(img, target)
 
 		loss = criterion(output, target)
 		loss.backward()
@@ -48,7 +48,7 @@ def evaluate(model,dataiter):
 			target = target.to(device)
 			#TODO: Adapt this piece of code to Encoder and decoder implementation
 			features = model.encoder...
-			output, attentions = model.decoder.generate_caption(features, vocab=dataset.vocab)
+			output, attentions, _ = model.decoder.generate_caption(features, vocab=dataset.vocab)
 
 			caption = ' '.join(output)
 
