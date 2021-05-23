@@ -71,6 +71,18 @@ def save_model(model, epoch):
 def train(num_epochs, model, train_loader, optimizer, criterion, device):
 	"""
 	Executes model training. Saves model to a file every epoch.
+	
+	Sequence of Operations:
+
+        1.Forward pass entire input batch through encoder.
+        2. Initialize decoder inputs as SOS_token, and hidden state as the encoder’s final hidden state.
+        3. Forward input batch sequence through decoder one time step at a time.
+        4. If teacher forcing: set next decoder input as the current target; else: set next decoder input as current decoder output.
+        5. Calculate and accumulate loss.
+        6. Perform backpropagation.
+        7. Clip gradients.
+        8. Update encoder and decoder model parameters.
+	
 	"""
 	for epoch in range(1,num_epochs+1):
 
