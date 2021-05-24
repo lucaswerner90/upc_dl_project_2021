@@ -63,7 +63,7 @@ def save_model(model, epoch):
 	model_state = {
 		'epoch':epoch,
 		'state_dict':model.state_dict()
-		}
+	}
 	torch.save(model_state,'Epoch_'+str(epoch)+'_model_state.pth')
 
 def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, device,log_interval):

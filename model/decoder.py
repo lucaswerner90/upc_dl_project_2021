@@ -4,70 +4,50 @@ import torch.nn.functional as F
 from torch import nn
 
 
-#palabra anterior o <SOS>       -->
-#[features_imagen]              --> attention -->  decoder --> [0,0......,1,0,0,0,0,0....0]
-
+# palabra anterior o <SOS>       -->
+# [features_imagen]              --> attention -->  decoder --> [0,0......,1,0,0,0,0,0....0]
 
 
 class Decoder(nn.Module):
-	def __init__(self, vocab_size, embed_size, hidden_size, num_layers = 1):
-		super(Decoder, self).__init__()
-		self.embed = nn.Embedding(vocab_size, embed_size)
-
+    def __init__(self, vocab_size, embed_size, hidden_size, num_layers=1):
+        super(Decoder, self).__init__()
+        self.embed = nn.Embedding(vocab_size, embed_size)
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
         # hidden_size * 2 => because we now have the encoder_states which are
         # states for backward and forward states
-		self.lstm = nn.LSTM((hidden_size * 2) + embed_size, hidden_size, num_layers)
-		self.linear = nn.Linear(hidden_size, vocab_size)
+        self.rnn = nn.GRU(hidden_size + embed_size, hidden_size, num_layers, batch_first=False)
+        self.linear = nn.Linear(hidden_size, vocab_size)
 
-        # we send the hidden states from the encoder (hidden_size * 2 because it's bidirectional)
-        # and the previous state of the decoder (which also has hidden_size dimensions)
-        self.energy = nn.Linear(hidden_size * 3, 1)
-
-        self.softmax = nn.Softmax(dim=0)
         self.relu = nn.ReLU()
 
-		self.dropout = nn.Dropout(.5)
+    def init_hidden(self, batch_size:int):
+        # (num_layers * num_directions, batch, hidden_size)
+        return torch.zeros(self.num_layers,batch_size,self.hidden_size)
 
-	def forward(self, image_features, word, encoder_states, prev_hidden_state, prev_cell_state):
+    def forward(self, context_vector, word, hidden_state=None):
         """
         It's important to remember that we compute one time step at a time
 
         word => (vocab_size)
-        image_features => 
+        image_features => (embed_size) ?
         encoder_states => (seq_len, batch, num_directions * hidden_size)
         """
-        seq_len = encoder_states.shape[0]
-        h_reshaped = prev_hidden_state.repeat(seq_len, 1, 1)
+        if hidden_state == None:
+            hidden_state = self.init_hidden(batch_size=word.shape[0])
 
-        # (vocab_size) => (1, vocab_size)
-        word = word.unsqueeze(0)
+        # embeddings => (bsz, 1, embed_size)
+        embeddings = self.embed(word)
 
-		embeddings = self.embed(word)
-		embeddings = torch.cat((image_features.unsqueeze(0),embeddings),dim=0)
+        # embeddings => (bsz, embed_size)
+        embeddings = embeddings.squeeze(1)
 
-        energy = self.relu(self.energy(
-            torch.cat((h_reshaped, encoder_states), dim=-1)
-        ))
-        # attention => (seq_len, batch_size, 1)
-        attention = self.softmax(energy)
+        rnn_input = torch.cat((context_vector, embeddings), dim=-1)
 
-        # Encoder states: (seq_len, batch, num_directions * hidden_size)
-        # attention: (seq_len, batch_size, 1)
-        # torch.bmm
-        
-        # (batch_size, 1, seq_length)
-        attention = attention.permute(1,2,0)
+        outputs, hidden_state = self.rnn(
+            rnn_input.unsqueeze(0), hidden_state)
+        outputs = self.linear(outputs)
 
-        encoder_states = encoder_states.permute(1,0,2)
-
-        # (vocab_size, 1, hidden_size*2) => (vocab_size, batch_size, hidden_size * 2)
-        context_vector = torch.bmm(attention, encoder_states).permute(1,0,2)
-
-        rnn_input = torch.cat((context_vector, embeddings), dim=2)
-
-		outputs, (hidden, cell) = self.lstm(rnn_input, (prev_hidden_state,prev_cell_state))
-		outputs = self.linear(outputs)
-        
         predictions = outputs.squeeze(0)
 
-		return predictions, hidden, cell
+        return predictions, hidden_state
