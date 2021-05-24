@@ -31,7 +31,6 @@ class Decoder(nn.Module):
 
         word => (vocab_size)
         image_features => (embed_size) ?
-        encoder_states => (seq_len, batch, num_directions * hidden_size)
         """
         # embeddings => (bsz, 1, embed_size)
         embeddings = self.embed(word)
@@ -43,7 +42,6 @@ class Decoder(nn.Module):
 
         outputs, hidden_state = self.rnn(rnn_input.unsqueeze(0), hidden_state)
         outputs = self.linear(outputs)
-
         predictions = outputs.squeeze(0)
 
         return predictions, hidden_state
