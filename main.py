@@ -1,14 +1,12 @@
 import os
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
 from torchvision import transforms
 
 from dataset.main import Flickr8kDataset
 from dataset.caps_collate import CapsCollate
-from model.encoder import Encoder
 from model.main import ImageCaptioningModel
 from train import train
 import json
