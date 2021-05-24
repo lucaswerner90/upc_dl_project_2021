@@ -8,11 +8,9 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device,
 	"""
 	device = 'cpu'
 	model.train()
-	epoch_start_time = time.time()
 	total_loss=0.
 	for i, batch in enumerate(iter(train_loader)):
-
-
+		batch_start_time = time.time()
 		img, target = batch
 		img = img.to(device)
 		target = target.to(device)
@@ -33,7 +31,7 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device,
 
 		if i % log_interval == 0 and i > 0:
 			cur_loss = total_loss / log_interval
-			elapsed = time.time() - epoch_start_time
+			elapsed = time.time() - batch_start_time
 			print(f'| epoch {epoch:3d} | {i:5d}/{len(train_loader):5d} batches | ms/batch {elapsed * 1000 / log_interval:5.2f} | loss {cur_loss:5.2f} | ppl {math.exp(cur_loss):8.2f}')
 			total_loss = 0.
 
@@ -48,9 +46,6 @@ def evaluate(model,test_loader):
 			img = img.to(device)
 			target = target.to(device)
 			#TODO: Adapt this piece of code to Encoder and decoder implementation
-			#features = model.encoder...
-			#output, attentions, _ = model.decoder.generate_caption(features, vocab=dataset.vocab)
-
 			caption = ' '.join(output)
 
 			total_loss += target.numel()*criterion(output,target).item()
