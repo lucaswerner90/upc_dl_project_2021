@@ -5,6 +5,7 @@ from model.attention import Attention
 #from encoder import Encoder
 from model.encoder import Encoder
 from model.decoder import Decoder
+from vocabulary import Vocabulary
 
 class ImageCaptioningModel(nn.Module):
 	def __init__(self, embed_size:int, vocab_size:int, caption_max_length:int):
@@ -36,3 +37,12 @@ class ImageCaptioningModel(nn.Module):
 			attention_weights.append(alphas)
 		output = torch.cat(predicted_captions).reshape(bsz, -1, timesteps)
 		return output, attention_weights
+
+	def inference(self, image, vocab:Vocabulary):
+		image_features = self.encoder(image.unsqueeze(0))
+		hidden = self.decoder.init_hidden(image_features.shape[0])
+		alphas, weighted_features = self.attention.forward(image_features, hidden)
+		word = [vocab.word_to_index['<SOS>']]
+		for _ in range(self.caption_max_length):
+			predictions_t, hidden = self.decoder.forward(weighted_features, word, hidden)
+			word = torch.argmax(predictions_t, dim=-1)
