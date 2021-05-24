@@ -39,12 +39,14 @@ def main():
 	# Test the dataloader
 	model = ImageCaptioningModel(
 		embed_size=hparams['EMBED_SIZE'],
+		image_features_dim=512,
 		vocab_size=len(dataset.vocab.word_to_index),
+		attention_dim=hparams['ATTENTION_DIM'],
 		caption_max_length=hparams['MAX_LENGTH']
 	)
 
 	train_split, test_split = random_split(dataset,[32364,8091]) #80% train, 20% test
-	train_loader = DataLoader(train_split,batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(pad_idx=dataset.vocab.word_to_index['<PAD>'],batch_first=True))
+	train_loader = DataLoader(train_split, shuffle=True, batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(pad_idx=dataset.vocab.word_to_index['<PAD>'],batch_first=True))
 	test_loader = DataLoader(test_split,batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(pad_idx=dataset.vocab.word_to_index['<PAD>'],batch_first=True))
 	
 	optimizer = optim.Adam(model.parameters(),lr=hparams['LEARNING_RATE'])

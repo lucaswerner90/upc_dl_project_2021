@@ -4,7 +4,6 @@ import torch.nn as nn
 class Encoder(nn.Module):
     def __init__(self):
         super(Encoder, self).__init__()
-        print("Extracting feature vectors from the image")
         pretrained_model = models.vgg16(pretrained=True)
         self.conv_base = pretrained_model.features
         # Freeze All layers as they will be used for inference
