@@ -9,12 +9,13 @@ from torchvision import transforms
 
 from vocabulary import Vocabulary
 from caps_collate import CapsCollate
+
 class Flickr8kDataset(Dataset):
     """
     Dataset for Flickr8k data treatment
     """
 
-    def __init__(self, dataset_folder='/local/Datasets/8KFlicker/archive',transform=None,reduce=False,max_size=5000):
+    def __init__(self, dataset_folder=os.path.join('data'),transform=None,reduce=False,vocab_max_size=5000):
         super().__init__()
         self.transform = transform
         self.images_folder = os.path.join(dataset_folder,'Images')
@@ -22,7 +23,7 @@ class Flickr8kDataset(Dataset):
 
         self.caption = self.dataframe['caption']
         self.vocab = Vocabulary()
-        self.vocab.build_vocabulary(self.caption.tolist(),reduce,max_size)
+        self.vocab.build_vocabulary(self.caption.tolist(),reduce,vocab_max_size)
         
 
     def read_image(self,filename):
@@ -83,7 +84,7 @@ if __name__ == "__main__":
         # transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225]),
         transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
     ])
-    dataset = Flickr8kDataset(transform=transform,reduce=True,max_size=MAX_SIZE)
+    dataset = Flickr8kDataset(transform=transform,reduce=True,vocab_max_size=MAX_SIZE)
 
     # Test the dataloader
     dataloader = DataLoader(dataset=dataset,batch_size=batch_size, collate_fn=CapsCollate(pad_idx=dataset.vocab.word_to_index['<PAD>'],batch_first=True))

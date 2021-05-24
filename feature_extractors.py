@@ -32,12 +32,7 @@ class Encoder(nn.Module):
     def __init__(self,num_emb_196=True):
         super().__init__()
 
-    ####   If we wanted to use the resnet50
-    #   resnet = models.resnet50(pretrained=True)
-    #   modules = list(resnet.children())[:-2]
-    #   self.resnet = nn.Sequential(*modules)
-
-   #####    We use a vgg16 network for the  feature extraction
+        # We use a vgg16 network for the  feature extraction
         pretrained_model = models.vgg16(pretrained=True)
         if num_emb_196==True:                                   # In this case we just keep the first 24 layers of the Vgg
             self.conv_base = nn.Sequential(*list(pretrained_model.features)[0:24])
@@ -46,15 +41,12 @@ class Encoder(nn.Module):
             self.conv_base = pretrained_model.features         # In this case we keep all the layers of the convolutional base of the Vgg
             print("Extracting 49 feat vect from the image")
 
-    # Freeze All layers as it will be mainly used for inference
-
+        # Freeze All layers as it will be mainly used for inference
         for i,param in enumerate(self.conv_base.parameters()):  
             param.requires_grad = False
-        #    print(param.name, param.requires_grad)
-        # print("numero de grupos de parametros:", i+1)
 
-     # Flaten layer that flatten the dimensions 2 and 3 (H and W of the feature maps respectively)
-        self.flat = nn.Flatten(2,3)      ####   MAYBE BETTER USE RESHAPE ???
+        # Flaten layer that flatten the dimensions 2 and 3 (H and W of the feature maps respectively)
+        self.flat = nn.Flatten(2,3)
 
     def forward(self, x):
         feat = self.conv_base(x)          # (batch_size, feat_maps=512, H=7 , W=7) or (batch_size, 512, 14 , 14)
@@ -67,7 +59,7 @@ if __name__ == "__main__":
 
     num_emb_196=False     ## If this is false the number of embeddings per image is 49
     image_size = 224   ## this is to keep the aspect relation. Otherwised we could set image_size to (224,224) and then there is no need to crop the image.
-    batch_size = 16
+    batch_size = 1
     MAX_SIZE = 5000
     transform = transforms.Compose([
         transforms.ToTensor(),
@@ -81,10 +73,9 @@ if __name__ == "__main__":
         transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225]),
         #transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
     ])
-    dataset = Flickr8kDataset(transform=transform,reduce=True,max_size=MAX_SIZE)
+    dataset = Flickr8kDataset(transform=transform,reduce=True,vocab_max_size=MAX_SIZE)
 
-    # split the database    TODO
-    # print(len(dataset))
+    # TODO: split the dataset
 
     # Set up the data loader for test
     dataloader = DataLoader(dataset=dataset,batch_size=batch_size, collate_fn=CapsCollate(pad_idx=dataset.vocab.word_to_index['<PAD>'],batch_first=True))
@@ -95,10 +86,7 @@ if __name__ == "__main__":
     encoder = Encoder(num_emb_196=False)
     encoder.eval()
 
-##    encoder.to(device)
-
     print(encoder) 
-
     print("Shape of the images tensor:",images.shape)
 
     img_emb = encoder(images)
