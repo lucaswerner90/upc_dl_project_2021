@@ -109,5 +109,10 @@ if __name__ == "__main__":
 		vocab_size=len(dataset.vocab.word_to_index),
 		caption_max_length=hparams['MAX_LENGTH']
 	)
-	predictions, hidden, cell = model.forward(images,captions)
-	print(predictions, hidden,cell)
+
+
+	h_0 = model.decoder.init_hidden(images.shape[0])
+	predicted_captions, attention_weights = model.forward(images,captions, h_0)
+
+	print(predicted_captions)
+	print(attention_weights)
