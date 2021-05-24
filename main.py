@@ -81,7 +81,6 @@ def main():
 	)
 
 if __name__ == "__main__":
-	# main()
 
 	image_size = (128,128)
 	batch_size = 2
@@ -100,18 +99,36 @@ if __name__ == "__main__":
 	dataset = Flickr8kDataset(transform=transform,reduce=True,vocab_max_size=MAX_SIZE)
 
 	# Test the dataloader
-	dataloader = DataLoader(dataset=dataset,batch_size=batch_size, collate_fn=CapsCollate(pad_idx=dataset.vocab.word_to_index['<PAD>'],batch_first=True))
-	batch_sample = next(iter(dataloader))
-	images, captions = batch_sample
 	model = ImageCaptioningModel(
 		embed_size=hparams['EMBED_SIZE'],
 		vocab_size=len(dataset.vocab.word_to_index),
 		caption_max_length=hparams['MAX_LENGTH']
 	)
+	
+	# dataloader = DataLoader(dataset=dataset,batch_size=batch_size, collate_fn=CapsCollate(pad_idx=dataset.vocab.word_to_index['<PAD>'],batch_first=True))
+	# batch_sample = next(iter(dataloader))
+	# images, captions = batch_sample
 
+	# h_0 = model.decoder.init_hidden(images.shape[0])
+	# predicted_captions, attention_weights = model.forward(images,captions, h_0)
 
-	h_0 = model.decoder.init_hidden(images.shape[0])
-	predicted_captions, attention_weights = model.forward(images,captions, h_0)
+	# print(predicted_captions)
+	# print(attention_weights)
 
-	print(predicted_captions)
-	print(attention_weights)
+	train_split, test_split = random_split(dataset,[32364,8091]) #80% train, 20% test
+	train_loader = DataLoader(train_split,batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(pad_idx=dataset.vocab.word_to_index['<PAD>'],batch_first=True))
+	test_loader = DataLoader(test_split,batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(pad_idx=dataset.vocab.word_to_index['<PAD>'],batch_first=True))
+	
+	optimizer = optim.Adam(model.parameters(),lr=hparams['LEARNING_RATE'])
+	criterion = nn.CrossEntropyLoss(ignore_index=dataset.vocab.word_to_index['<PAD>'])
+
+	train(
+		num_epochs=hparams['NUM_EPOCHS'],
+		model=model,
+		train_loader=train_loader,
+		test_loader=test_loader,
+		optimizer= optimizer,
+		criterion=criterion,
+		device=hparams['device'],
+		log_interval=hparams['LOG_INTERVAL']
+	)

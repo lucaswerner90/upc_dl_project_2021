@@ -23,7 +23,7 @@ class Decoder(nn.Module):
 
     def init_hidden(self, batch_size:int):
         # (num_layers * num_directions, batch, hidden_size)
-        return torch.zeros(self.num_layers, batch_size,self.hidden_size)
+        return torch.zeros(self.num_layers, batch_size, self.hidden_size)
 
     def forward(self, context_vector, word, hidden_state=None):
         """
@@ -41,7 +41,7 @@ class Decoder(nn.Module):
         rnn_input = torch.cat((context_vector, embeddings), dim=-1)
 
         outputs, hidden_state = self.rnn(rnn_input.unsqueeze(0), hidden_state)
-        outputs = self.linear(outputs)
+        outputs = self.relu(self.linear(outputs))
         predictions = outputs.squeeze(0)
 
         return predictions, hidden_state

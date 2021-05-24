@@ -1,11 +1,12 @@
 import time
 import torch
-
+import math
 
 def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device, log_interval):
 	"""
 	Train single epoch
 	"""
+	device = 'cpu'
 	model.train()
 	epoch_start_time = time.time()
 	total_loss=0.
@@ -16,8 +17,9 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device,
 		target = target.to(device)
 		
 		optimizer.zero_grad()
+
 		#TODO: introduce for loop to make sentence
-		output, attentions, _ = model(img, target)
+		output, _ = model(img, target)
 
 		loss = criterion(output, target)
 		loss.backward()
@@ -31,14 +33,13 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device,
 		if i % log_interval == 0 and i > 0:
 			cur_loss = total_loss / log_interval
 			elapsed = time.time() - epoch_start_time
-			print(f'| epoch {epoch:3d} | {i:5d}/{len(train_loader):5d} batches | lr {lr:.4f} | ms/batch {elapsed * 1000 / log_interval:5.2f} | loss {cur_loss:5.2f} | ppl {math.exp(cur_loss):8.2f}')
-			start_time=time.time()
+			print(f'| epoch {epoch:3d} | {i:5d}/{len(train_loader):5d} batches | ms/batch {elapsed * 1000 / log_interval:5.2f} | loss {cur_loss:5.2f} | ppl {math.exp(cur_loss):8.2f}')
 
 def evaluate(model,test_loader):
 	model.eval()
 
 	total_loss = 0.
-
+	device= 'cpu'
 	with torch.no_grad():
 		for idx, batch in enumerate(iter(test_loader)):
 			img, target = batch
@@ -70,9 +71,11 @@ def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, dev
 	"""
 	Executes model training. Saves model to a file every epoch.
 	"""	
+	epoch_start_time = time.time()
+
 	for epoch in range(1,num_epochs+1):
 
-		train_single_epoch(epoch, model, train_loader,optimizer, criterion, device,log_interval)
+		train_single_epoch(epoch, model, train_loader,optimizer, criterion, device, log_interval)
 
 		val_loss, _ = evaluate(test_loader)
 
@@ -81,4 +84,3 @@ def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, dev
 		print('-' * 89)
 
 		save_model(model, epoch)
-

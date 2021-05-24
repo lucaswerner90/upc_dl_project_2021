@@ -8,7 +8,7 @@ class CapsCollate:
     """
     Collate to apply the padding to the captions with dataloader
     """
-    def __init__(self,pad_idx,batch_first=False):
+    def __init__(self,pad_idx,batch_first=True):
         self.pad_idx = pad_idx
         self.batch_first = batch_first
     

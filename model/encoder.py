@@ -8,12 +8,11 @@ class Encoder(nn.Module):
         pretrained_model = models.vgg16(pretrained=True)
         self.conv_base = pretrained_model.features
         # Freeze All layers as they will be used for inference
-        for _,param in enumerate(self.conv_base.parameters()):  
+        for _, param in enumerate(self.conv_base.parameters()):  
             param.requires_grad = False
 
         # Flaten layer that flatten the dimensions 2 and 3 (H and W of the feature maps respectively)
         self.flat = nn.Flatten(2,3)
-        # self.linear = nn.Linear(8192,embed_size)
         self.relu = nn.ReLU()
 
     def forward(self, x):
