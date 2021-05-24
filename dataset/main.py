@@ -7,8 +7,8 @@ from torch.utils.data import Dataset, DataLoader
 from PIL import Image
 from torchvision import transforms
 
-from vocabulary import Vocabulary
-from caps_collate import CapsCollate
+from dataset.vocabulary import Vocabulary
+from dataset.caps_collate import CapsCollate
 
 class Flickr8kDataset(Dataset):
     """
@@ -16,7 +16,7 @@ class Flickr8kDataset(Dataset):
     """
 
     def __init__(self, dataset_folder=os.path.join('data'),transform=None,reduce=False,vocab_max_size=5000):
-        super().__init__()
+        super(Flickr8kDataset, self).__init__()
         self.transform = transform
         self.images_folder = os.path.join(dataset_folder,'Images')
         self.dataframe = pd.read_csv(open(os.path.join(dataset_folder,'captions.txt'),'r'))
@@ -26,7 +26,7 @@ class Flickr8kDataset(Dataset):
         self.vocab.build_vocabulary(self.caption.tolist(),reduce,vocab_max_size)
         
 
-    def read_image(self,filename):
+    def read_image(self,filename:str) -> Image:
         """
         Reads the image file based on the filename
 
