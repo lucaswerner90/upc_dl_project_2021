@@ -2,7 +2,7 @@ import time
 import torch
 
 
-def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device):
+def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device, log_interval):
 	"""
 	Train single epoch
 	"""
@@ -28,27 +28,25 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device)
 
 		total_loss += loss.item()
 
-		log_interval = 100
-
 		if i % log_interval == 0 and i > 0:
 			cur_loss = total_loss / log_interval
 			elapsed = time.time() - epoch_start_time
 			print(f'| epoch {epoch:3d} | {i:5d}/{len(train_loader):5d} batches | lr {lr:.4f} | ms/batch {elapsed * 1000 / log_interval:5.2f} | loss {cur_loss:5.2f} | ppl {math.exp(cur_loss):8.2f}')
 			start_time=time.time()
 
-def evaluate(model,dataiter):
+def evaluate(model,test_loader):
 	model.eval()
 
 	total_loss = 0.
 
 	with torch.no_grad():
-		for idx, batch in enumerate(dataiter):
+		for idx, batch in enumerate(iter(test_loader)):
 			img, target = batch
 			img = img.to(device)
 			target = target.to(device)
 			#TODO: Adapt this piece of code to Encoder and decoder implementation
-			features = model.encoder...
-			output, attentions, _ = model.decoder.generate_caption(features, vocab=dataset.vocab)
+			#features = model.encoder...
+			#output, attentions, _ = model.decoder.generate_caption(features, vocab=dataset.vocab)
 
 			caption = ' '.join(output)
 
@@ -66,30 +64,21 @@ def save_model(model, epoch):
 		'epoch':epoch,
 		'state_dict':model.state_dict()
 		}
-	torch.save(model_state,'model_state.pth')
+	torch.save(model_state,'Epoch_'+str(epoch)+'_model_state.pth')
 
-def train(num_epochs, model, train_loader, optimizer, criterion, device):
+def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, device,log_interval):
 	"""
 	Executes model training. Saves model to a file every epoch.
-	
-=======
-def train():
-	"""
-
-	
-	"""
+	"""	
 	for epoch in range(1,num_epochs+1):
 
-		train_single_epoch(epoch, model, train_loader,optimizer, criterion, device)
+		train_single_epoch(epoch, model, train_loader,optimizer, criterion, device,log_interval)
 
-		val_loss, _ = evaluate(test_data)
+		val_loss, _ = evaluate(test_loader)
 
 		print('-' * 89)
-        print(f'| end of epoch {epoch} | time: {(time.time() - epoch_start_time):.2f}s | valid loss {val_loss:.2f}')
-        print('-' * 89)
+		print(f'| end of epoch {epoch} | time: {(time.time() - epoch_start_time):.2f}s | valid loss {val_loss:.2f}')
+		print('-' * 89)
 
 		save_model(model, epoch)
-
-
-if __name__ == "__main__":
 
