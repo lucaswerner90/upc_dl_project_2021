@@ -25,7 +25,7 @@ def main():
 	# Choosing image transformations
 	transform = transforms.Compose([
 		transforms.ToTensor(),
-		transforms.Resize(hparams['IMAGE_SIZE'],hparams['IMAGE_SIZE']),
+		transforms.Resize((hparams['IMAGE_SIZE'],hparams['IMAGE_SIZE'])),
 		# The normalize parameters depends on the model we're gonna use
 		# If we apply transfer learning from a model that used ImageNet, then
 		# we should use the ImageNet values to normalize the dataset.

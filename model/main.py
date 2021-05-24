@@ -5,7 +5,7 @@ from model.attention import Attention
 #from encoder import Encoder
 from model.encoder import Encoder
 from model.decoder import Decoder
-from vocabulary import Vocabulary
+from dataset.vocabulary import Vocabulary
 
 class ImageCaptioningModel(nn.Module):
 	def __init__(self, embed_size:int, vocab_size:int, caption_max_length:int):
