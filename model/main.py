@@ -18,6 +18,7 @@ class ImageCaptioningModel(nn.Module):
 		"""
 		images => (batch_size, channels, W, H)
 		captions => (batch_size, captions_length)
+		initial_hidden => (seq_len = 1, bsz_size, captions_length)
 		"""
 
 		images_features = self.encoder(images)
