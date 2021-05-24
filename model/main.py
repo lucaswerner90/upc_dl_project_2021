@@ -9,8 +9,8 @@ from model.decoder import Decoder
 class ImageCaptioningModel(nn.Module):
 	def __init__(self, embed_size:int, vocab_size:int, caption_max_length:int):
 		super(ImageCaptioningModel, self).__init__()
-		self.encoder = Encoder(embed_size)
-		self.attention = Attention(image_features_dim=embed_size, decoder_hidden_state_dim=embed_size, attention_dim=256)
+		self.encoder = Encoder()
+		self.attention = Attention(image_features_dim=512, decoder_hidden_state_dim=embed_size, attention_dim=256)
 		self.decoder = Decoder(vocab_size, embed_size, embed_size)
 		self.caption_max_length = caption_max_length
 	
@@ -26,6 +26,7 @@ class ImageCaptioningModel(nn.Module):
 		timesteps = captions.shape[-1]
 		predicted_captions = []
 		attention_weights = []
+
 		for i in range(timesteps):
 			alphas, weighted_features = self.attention.forward(images_features, hidden)
 			predictions_t, hidden = self.decoder.forward(weighted_features,captions[:,i:i+1], hidden)

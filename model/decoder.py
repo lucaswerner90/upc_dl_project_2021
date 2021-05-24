@@ -16,14 +16,14 @@ class Decoder(nn.Module):
         self.num_layers = num_layers
         # hidden_size * 2 => because we now have the encoder_states which are
         # states for backward and forward states
-        self.rnn = nn.GRU(hidden_size + embed_size, hidden_size, num_layers, batch_first=False)
+        self.rnn = nn.GRU(512 + embed_size, hidden_size, num_layers, batch_first=False)
         self.linear = nn.Linear(hidden_size, vocab_size)
 
         self.relu = nn.ReLU()
 
     def init_hidden(self, batch_size:int):
         # (num_layers * num_directions, batch, hidden_size)
-        return torch.zeros(self.num_layers,batch_size,self.hidden_size)
+        return torch.zeros(self.num_layers, batch_size,self.hidden_size)
 
     def forward(self, context_vector, word, hidden_state=None):
         """
@@ -33,9 +33,6 @@ class Decoder(nn.Module):
         image_features => (embed_size) ?
         encoder_states => (seq_len, batch, num_directions * hidden_size)
         """
-        if hidden_state == None:
-            hidden_state = self.init_hidden(batch_size=word.shape[0])
-
         # embeddings => (bsz, 1, embed_size)
         embeddings = self.embed(word)
 
@@ -44,8 +41,7 @@ class Decoder(nn.Module):
 
         rnn_input = torch.cat((context_vector, embeddings), dim=-1)
 
-        outputs, hidden_state = self.rnn(
-            rnn_input.unsqueeze(0), hidden_state)
+        outputs, hidden_state = self.rnn(rnn_input.unsqueeze(0), hidden_state)
         outputs = self.linear(outputs)
 
         predictions = outputs.squeeze(0)

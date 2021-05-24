@@ -15,7 +15,7 @@ class DownloadDataset():
 		os.environ['KAGGLE_KEY'] = data['key']
 
 		# https://github.com/Kaggle/kaggle-api
-		os.system(f'kaggle datasets download shadabhussain/flickr8k --path {filepath} --unzip')
+		os.system(f'kaggle datasets download adityajn105/flickr8k --path {filepath} --unzip')
 	
 if __name__ == '__main__':
 	print('Downloading Flickr8k dataset...')

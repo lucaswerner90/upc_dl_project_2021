@@ -36,7 +36,7 @@ class Flickr8kDataset(Dataset):
         Returns:
             [Image]: Returns a PIL.Image object 
         """
-        image_path = os.path.join(self.images_folder, filename)
+        image_path = os.path.join(os.getcwd(),self.images_folder, filename)
         image = Image.open(image_path)
         return image
 
