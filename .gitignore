@@ -132,4 +132,4 @@ dmypy.json
 notes.txt
 #.vscode settings and launch
 .vscode/launch.json
-.vscode/settings.jsons
+.vscode/settings.json
