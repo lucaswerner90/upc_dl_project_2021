@@ -6,7 +6,6 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device,
 	"""
 	Train single epoch
 	"""
-	device = 'cpu'
 	model.train()
 	total_loss=0.
 	for i, batch in enumerate(iter(train_loader)):
