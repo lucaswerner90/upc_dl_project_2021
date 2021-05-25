@@ -17,7 +17,7 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device,
 		optimizer.zero_grad()
 
 		#TODO: introduce for loop to make sentence
-		output, _ = model(img, target,device)
+		output, _ = model(img, target)
 		loss = criterion(output, target[:,1:])
 		loss.backward()
 
@@ -83,7 +83,7 @@ def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, dev
 
 		train_single_epoch(epoch, model, train_loader,optimizer, criterion, device, log_interval)
 
-		val_loss, _ = evaluate(model,test_loader,vocab,device)
+		val_loss, _ = evaluate(model,test_loader,vocab)
 
 		print('-' * 89)
 		print(f'| end of epoch {epoch} | time: {(time.time() - epoch_start_time):.2f}s | valid loss {val_loss:.2f}')
