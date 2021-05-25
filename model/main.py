@@ -8,10 +8,10 @@ from model.decoder import Decoder
 from dataset.vocabulary import Vocabulary
 
 class ImageCaptioningModel(nn.Module):
-	def __init__(self, image_features_dim:int,embed_size:int, vocab_size:int, caption_max_length:int,device):
+	def __init__(self, image_features_dim:int,embed_size:int, vocab_size:int, caption_max_length:int,attention_dim, device):
 		super(ImageCaptioningModel, self).__init__()
 		self.encoder = Encoder(device)
-		self.attention = Attention(image_features_dim=image_features_dim, decoder_hidden_state_dim=embed_size, attention_dim=256,device=device)
+		self.attention = Attention(image_features_dim=image_features_dim, decoder_hidden_state_dim=embed_size, attention_dim=attention_dim,device=device)
 		self.decoder = Decoder(image_features_dim=image_features_dim,vocab_size=vocab_size,hidden_size=embed_size,embed_size=embed_size,device=device)
 		self.caption_max_length = caption_max_length
 	
