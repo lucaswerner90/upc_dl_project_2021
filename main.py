@@ -21,12 +21,11 @@ with open(os.path.join(cwd, 'config.json')) as f:
 hparams = CONFIGURATION['HPARAMS']
 hparams['DEVICE'] = device
 
-
 def main():
 
 	transform = transforms.Compose([
 		transforms.ToTensor(),
-		transforms.Resize(hparams['IMAGE_SIZE']),
+		transforms.Resize((hparams['IMAGE_SIZE'],hparams['IMAGE_SIZE'])),
 		transforms.RandomCrop(hparams['IMAGE_SIZE']),
         # The normalize parameters depends on the model we're gonna use
         # If we apply transfer learning from a model that used ImageNet, then
@@ -34,7 +33,7 @@ def main():
         # Otherwise we could just normalize the values between -1 and 1 using the
         # standard mean and standard deviation
         # transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225]),
-		transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+		transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225]),
 	])
 	dataset = Flickr8kDataset(dataset_folder=CONFIGURATION['DATASET_FOLDER'], transform=transform,
 								reduce=hparams['REDUCE_VOCAB'], vocab_max_size=hparams['VOCAB_SIZE'])
@@ -43,7 +42,7 @@ def main():
 	model = ImageCaptioningModel(
 		image_features_dim=hparams['IMAGE_FEATURES_DIM'],
 		embed_size=hparams['EMBED_SIZE'],
-		vocab_size=len(dataset.vocab.word_to_index),
+		vocab = dataset.vocab,
 		caption_max_length=hparams['MAX_LENGTH'],
 		attention_dim=hparams['ATTENTION_DIM']
 	).to(hparams['DEVICE'])
@@ -56,7 +55,7 @@ def main():
 
 		
 
-	train_loader = DataLoader(train_split, batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(
+	train_loader = DataLoader(train_split, shuffle=True, batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(
 		pad_idx=dataset.vocab.word_to_index['<PAD>'], batch_first=True))
 	test_loader = DataLoader(test_split, batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(
 		pad_idx=dataset.vocab.word_to_index['<PAD>'], batch_first=True))
@@ -74,7 +73,6 @@ def main():
 		criterion=criterion,
 		device=hparams['DEVICE'],
 		log_interval=hparams['LOG_INTERVAL'],
-		vocab=dataset.vocab
 	)
 
 
