@@ -12,7 +12,7 @@ class ImageCaptioningModel(nn.Module):
 		super(ImageCaptioningModel, self).__init__()
 		self.encoder = Encoder(device)
 		self.attention = Attention(image_features_dim=image_features_dim, decoder_hidden_state_dim=embed_size, attention_dim=256,device=device)
-		self.decoder = Decoder(vocab_size, embed_size, embed_size,device=device)
+		self.decoder = Decoder(image_features_dim=image_features_dim,vocab_size=vocab_size,hidden_size=embed_size,embed_size=embed_size,device=device)
 		self.caption_max_length = caption_max_length
 	
 	def forward(self, images, captions,device, initial_hidden=None):
@@ -38,7 +38,7 @@ class ImageCaptioningModel(nn.Module):
 		output = torch.cat(predicted_captions).reshape(bsz, -1, timesteps)
 		return output, attention_weights
 	
-	def inference(self, image, vocab:Vocabulary):
+	def inference(self, image, vocab:Vocabulary,device):
 		image_features = self.encoder(image)
 		hidden = self.decoder.init_hidden(image.shape[0]).to(device)
 		alphas, weighted_features = self.attention.forward(image_features, hidden)

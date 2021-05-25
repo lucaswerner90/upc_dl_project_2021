@@ -51,7 +51,7 @@ def evaluate(model,test_loader, vocab,device):#TODO:add device
 			img = img.to(device)
 			target = target.to(device)
 			for i in range(img.shape[0]):
-				sentence = model.inference(img[i],vocab)
+				sentence = model.inference(image=img[i],vocab=vocab,device=device)
 				
 			
 

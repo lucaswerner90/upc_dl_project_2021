@@ -94,7 +94,7 @@ if __name__ == "__main__":
     transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Resize(hparams['IMAGE_SIZE']),
-        transforms.CenterCrop(hparams['IMAGE_SIZE']),
+        transforms.RandomCrop(hparams['IMAGE_SIZE']),
         # The normalize parameters depends on the model we're gonna use
         # If we apply transfer learning from a model that used ImageNet, then
         # we should use the ImageNet values to normalize the dataset.
@@ -108,7 +108,8 @@ if __name__ == "__main__":
 
     # Test the dataloader
     model = ImageCaptioningModel(
-        embed_size=hparams['EMBED_SIZE'],
+        image_features_dim=hparams['IMAGE_FEATURES_DIM'],
+		embed_size=hparams['EMBED_SIZE'],
         vocab_size=len(dataset.vocab.word_to_index),
         caption_max_length=hparams['MAX_LENGTH'],
 		device = hparams['DEVICE']
