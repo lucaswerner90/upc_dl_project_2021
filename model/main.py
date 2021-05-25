@@ -8,11 +8,11 @@ from model.decoder import Decoder
 from dataset.vocabulary import Vocabulary
 
 class ImageCaptioningModel(nn.Module):
-	def __init__(self, image_features_dim:int, embed_size:int, vocab_size:int, attention_dim:int, caption_max_length:int):
+	def __init__(self, image_features_dim:int,embed_size:int, vocab_size:int, caption_max_length:int,attention_dim):
 		super(ImageCaptioningModel, self).__init__()
 		self.encoder = Encoder()
 		self.attention = Attention(image_features_dim=image_features_dim, decoder_hidden_state_dim=embed_size, attention_dim=attention_dim)
-		self.decoder = Decoder(image_features_dim, vocab_size, embed_size, embed_size)
+		self.decoder = Decoder(image_features_dim=image_features_dim,vocab_size=vocab_size,hidden_size=embed_size,embed_size=embed_size)
 		self.caption_max_length = caption_max_length
 	
 	def forward(self, images, captions, initial_hidden=None):
@@ -37,12 +37,18 @@ class ImageCaptioningModel(nn.Module):
 			attention_weights.append(alphas)
 		output = torch.cat(predicted_captions).reshape(bsz, -1, timesteps)
 		return output, attention_weights
-
+	
 	def inference(self, image, vocab:Vocabulary):
-		image_features = self.encoder(image.unsqueeze(0))
-		hidden = self.decoder.init_hidden(image_features.shape[0])
+		image_features = self.encoder(image)
+		hidden = self.decoder.init_hidden(image.shape[0])
 		alphas, weighted_features = self.attention.forward(image_features, hidden)
-		word = [vocab.word_to_index['<SOS>']]
-		for _ in range(self.caption_max_length):
+		word = torch.IntTensor(vocab.word_to_index['<START>'])
+		sentence = [word.tolist()]
+		
+		for i in range(self.caption_max_length):
 			predictions_t, hidden = self.decoder.forward(weighted_features, word, hidden)
 			word = torch.argmax(predictions_t, dim=-1)
+			sentence.append(word.tolist())
+			if word==vocab.word_to_index['<END>']:
+				break
+		return sentence

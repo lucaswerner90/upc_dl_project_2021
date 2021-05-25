@@ -6,6 +6,7 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device,
 	"""
 	Train single epoch
 	"""
+	#device = 'cpu'
 	model.train()
 	total_loss=0.
 	for i, batch in enumerate(iter(train_loader)):
@@ -36,21 +37,27 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device,
 			print(f'Expected: {target[0,1:]}')
 			print('-'*89)
 			total_loss = 0.
+			
 
-def evaluate(model,test_loader):
+def evaluate(model,test_loader, vocab,device):#TODO:add device
 	model.eval()
 
 	total_loss = 0.
-	device= 'cpu'
+	sentences = []
+	#device= 'cpu'
 	with torch.no_grad():
 		for idx, batch in enumerate(iter(test_loader)):
 			img, target = batch
 			img = img.to(device)
 			target = target.to(device)
-			#TODO: Adapt this piece of code to Encoder and decoder implementation
-			caption = ' '.join(output)
+			for i in range(img.shape[0]):
+				sentence = model.inference(image=img[i],vocab=vocab,device=device)
+				
+			
 
-			total_loss += target.numel()*criterion(output,target).item()
+			caption = ' '.join(sentence)
+
+			total_loss += target.numel()*criterion(sentence,target).item()
 			n += target.numel()
 
 		return total_loss / n, caption
@@ -66,7 +73,7 @@ def save_model(model, epoch):
 	}
 	torch.save(model_state,'Epoch_'+str(epoch)+'_model_state.pth')
 
-def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, device,log_interval):
+def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, device,log_interval,vocab):
 	"""
 	Executes model training. Saves model to a file every epoch.
 	"""	
@@ -76,7 +83,7 @@ def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, dev
 
 		train_single_epoch(epoch, model, train_loader,optimizer, criterion, device, log_interval)
 
-		val_loss, _ = evaluate(test_loader)
+		val_loss, _ = evaluate(model,test_loader,vocab)
 
 		print('-' * 89)
 		print(f'| end of epoch {epoch} | time: {(time.time() - epoch_start_time):.2f}s | valid loss {val_loss:.2f}')
