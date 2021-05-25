@@ -39,7 +39,7 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device,
 			total_loss = 0.
 			
 
-def evaluate(model,test_loader, vocab,device):#TODO:add device
+def evaluate(model,test_loader, vocab,device,criterion):#TODO:add device
 	model.eval()
 
 	total_loss = 0.
@@ -51,7 +51,7 @@ def evaluate(model,test_loader, vocab,device):#TODO:add device
 			img = img.to(device)
 			target = target.to(device)
 			for i in range(img.shape[0]):
-				sentence = model.inference(image=img[i],vocab=vocab,device=device)
+				sentence = model.inference(image=img[i].unsqueeze(0),vocab=vocab)
 				
 			
 
@@ -83,10 +83,12 @@ def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, dev
 
 		train_single_epoch(epoch, model, train_loader,optimizer, criterion, device, log_interval)
 
-		val_loss, _ = evaluate(model,test_loader,vocab)
+		save_model(model, epoch)
+		
+		val_loss, _ = evaluate(model,test_loader,vocab,device,criterion)
 
 		print('-' * 89)
 		print(f'| end of epoch {epoch} | time: {(time.time() - epoch_start_time):.2f}s | valid loss {val_loss:.2f}')
 		print('-' * 89)
 
-		save_model(model, epoch)
+		
