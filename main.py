@@ -47,7 +47,7 @@ def main():
         caption_max_length=hparams['MAX_LENGTH'],
 		attention_dim=hparams['ATTENTION_DIM'],
 		device = hparams['DEVICE']
-    ).to(device)
+    ).to(hparams['DEVICE'])
 
     train_split, test_split = random_split(
         dataset, [32364, 8091])  # 80% train, 20% test

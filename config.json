@@ -11,7 +11,7 @@
 		"EMBED_SIZE": 10,
 		"LEARNING_RATE": 1e-3,
 		"IMAGE_SIZE": 224,
-		"LOG_INTERVAL": 2,
-		"DEVICE": "cpu"
+		"LOG_INTERVAL": 2
+		
 	}
 }
