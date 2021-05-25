@@ -45,12 +45,13 @@ def main():
 		embed_size=hparams['EMBED_SIZE'],
         vocab_size=len(dataset.vocab.word_to_index),
         caption_max_length=hparams['MAX_LENGTH'],
-		attention_dim=hparams['ATTENTION_DIM'],
-		device = hparams['DEVICE']
+		attention_dim=hparams['ATTENTION_DIM']
     ).to(hparams['DEVICE'])
 
     train_split, test_split = random_split(
         dataset, [32364, 8091])  # 80% train, 20% test
+	if torch.cuda.is_available():
+		torch.set_default_tensor_type('torch.cuda.FloatTensor')
     train_loader = DataLoader(train_split, batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(
         pad_idx=dataset.vocab.word_to_index['<PAD>'], batch_first=True))
     test_loader = DataLoader(test_split, batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(

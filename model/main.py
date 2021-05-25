@@ -10,12 +10,12 @@ from dataset.vocabulary import Vocabulary
 class ImageCaptioningModel(nn.Module):
 	def __init__(self, image_features_dim:int,embed_size:int, vocab_size:int, caption_max_length:int,attention_dim, device):
 		super(ImageCaptioningModel, self).__init__()
-		self.encoder = Encoder(device)
-		self.attention = Attention(image_features_dim=image_features_dim, decoder_hidden_state_dim=embed_size, attention_dim=attention_dim,device=device)
-		self.decoder = Decoder(image_features_dim=image_features_dim,vocab_size=vocab_size,hidden_size=embed_size,embed_size=embed_size,device=device)
+		self.encoder = Encoder()
+		self.attention = Attention(image_features_dim=image_features_dim, decoder_hidden_state_dim=embed_size, attention_dim=attention_dim)
+		self.decoder = Decoder(image_features_dim=image_features_dim,vocab_size=vocab_size,hidden_size=embed_size,embed_size=embed_size)
 		self.caption_max_length = caption_max_length
 	
-	def forward(self, images, captions,device, initial_hidden=None):
+	def forward(self, images, captions, initial_hidden=None):
 		"""
 		images => (batch_size, channels, W, H)
 		captions => (batch_size, captions_length)
@@ -24,7 +24,7 @@ class ImageCaptioningModel(nn.Module):
 
 		images_features = self.encoder(images)
 		bsz, *_ = images_features.shape
-		hidden = self.decoder.init_hidden(images.shape[0]).to(device) if initial_hidden == None else initial_hidden
+		hidden = self.decoder.init_hidden(images.shape[0]) if initial_hidden == None else initial_hidden
 		timesteps = captions.shape[-1]-1
 		predicted_captions = []
 		attention_weights = []
@@ -38,11 +38,11 @@ class ImageCaptioningModel(nn.Module):
 		output = torch.cat(predicted_captions).reshape(bsz, -1, timesteps)
 		return output, attention_weights
 	
-	def inference(self, image, vocab:Vocabulary,device):
+	def inference(self, image, vocab:Vocabulary):
 		image_features = self.encoder(image)
-		hidden = self.decoder.init_hidden(image.shape[0]).to(device)
+		hidden = self.decoder.init_hidden(image.shape[0])
 		alphas, weighted_features = self.attention.forward(image_features, hidden)
-		word = torch.IntTensor(vocab.word_to_index['<START>']).to(device)
+		word = torch.IntTensor(vocab.word_to_index['<START>'])
 		sentence = [word.tolist()]
 		
 		for i in range(self.caption_max_length):

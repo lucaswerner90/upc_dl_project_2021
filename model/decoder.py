@@ -9,15 +9,15 @@ from torch import nn
 
 
 class Decoder(nn.Module):
-    def __init__(self, image_features_dim,vocab_size, embed_size, hidden_size,device, num_layers=1):
+    def __init__(self, image_features_dim,vocab_size, embed_size, hidden_size, num_layers=1):
         super(Decoder, self).__init__()
-        self.embed = nn.Embedding(vocab_size, embed_size).to(device)
+        self.embed = nn.Embedding(vocab_size, embed_size)
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         # hidden_size * 2 => because we now have the encoder_states which are
         # states for backward and forward states
-        self.rnn = nn.GRU(image_features_dim + embed_size, hidden_size, num_layers, batch_first=False).to(device)
-        self.linear = nn.Linear(hidden_size, vocab_size).to(device)
+        self.rnn = nn.GRU(image_features_dim + embed_size, hidden_size, num_layers, batch_first=False)
+        self.linear = nn.Linear(hidden_size, vocab_size)
 
         self.relu = nn.ReLU()
 
