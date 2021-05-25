@@ -9,7 +9,7 @@ from torch import nn
 
 
 class Decoder(nn.Module):
-    def __init__(self, image_features_dimvocab_size, embed_size, hidden_size,device, num_layers=1):
+    def __init__(self, image_features_dim,vocab_size, embed_size, hidden_size,device, num_layers=1):
         super(Decoder, self).__init__()
         self.embed = nn.Embedding(vocab_size, embed_size).to(device)
         self.hidden_size = hidden_size
