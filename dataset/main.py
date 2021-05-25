@@ -15,7 +15,7 @@ class Flickr8kDataset(Dataset):
     Dataset for Flickr8k data treatment
     """
 
-    def __init__(self, dataset_folder=os.path.join('data'),transform=None,reduce=False,vocab_max_size=5000):
+    def __init__(self, dataset_folder,transform=None,reduce=False,vocab_max_size=5000):
         super(Flickr8kDataset, self).__init__()
         self.transform = transform
         self.images_folder = os.path.join(dataset_folder,'Images')

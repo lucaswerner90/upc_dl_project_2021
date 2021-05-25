@@ -3,15 +3,15 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class Attention(nn.Module):
-	def __init__(self, image_features_dim, decoder_hidden_state_dim, attention_dim):
+	def __init__(self, image_features_dim, decoder_hidden_state_dim, attention_dim, device):
 		super(Attention, self).__init__()
 
 		self.attention_dim = attention_dim
 
-		self.U = nn.Linear(in_features=image_features_dim, out_features=attention_dim)
-		self.W = nn.Linear(in_features=decoder_hidden_state_dim,out_features=attention_dim)
+		self.U = nn.Linear(in_features=image_features_dim, out_features=attention_dim).to(device)
+		self.W = nn.Linear(in_features=decoder_hidden_state_dim,out_features=attention_dim).to(device)
 
-		self.A = nn.Linear(attention_dim,1)
+		self.A = nn.Linear(attention_dim,1).to(device)
 	
 	def forward(self, features, hidden_state):
 		u_features = self.U(features.transpose(1,2))
