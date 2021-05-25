@@ -67,7 +67,7 @@ def main():
         test_loader=test_loader,
         optimizer=optimizer,
         criterion=criterion,
-        device=hparams['device'],
+        device=hparams['DEVICE'],
         log_interval=hparams['LOG_INTERVAL'],
         vocab=dataset.vocab
     )
