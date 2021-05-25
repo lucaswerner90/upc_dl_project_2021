@@ -1,5 +1,5 @@
 {	
-	"DATASET_FOLDER": "/local/Datasets/8KFlicker/archive",
+	"DATASET_FOLDER": "data",
 	"HPARAMS":{
 		"BATCH_SIZE": 64,
 		"VOCAB_SIZE": 5000,
