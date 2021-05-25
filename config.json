@@ -1,15 +1,15 @@
 {	
-	"DATASET_FOLDER": "data",
+	"DATASET_FOLDER": "/local/Datasets/8KFlicker/archive",
 	"HPARAMS":{
-		"BATCH_SIZE": 8,
+		"BATCH_SIZE": 64,
 		"VOCAB_SIZE": 5000,
-		"REDUCE_VOCAB": false,
-		"NUM_EPOCHS": 10,
+		"REDUCE_VOCAB": true,
+		"NUM_EPOCHS": 1,
 		"MAX_LENGTH": 25,
 		"EMBED_SIZE": 10,
 		"LEARNING_RATE": 1e-3,
-		"IMAGE_SIZE": 128,
-		"ATTENTION_DIM": 128,
-		"LOG_INTERVAL": 10
+		"IMAGE_SIZE": 224,
+		"LOG_INTERVAL": 2,
+		"DEVICE": "cpu"
 	}
 }
