@@ -54,4 +54,4 @@ class Vocabulary():
     #to reconstruct caption
     #TODO: Pending to concat caption
     def generate_caption(self,vec):
-        return [self.index_to_word[token] if token in self.index_to_word else '<UNK>' for token in vec.tolist()]
+        return ' '.join([self.index_to_word[token] if token in self.index_to_word else '<UNK>' for token in vec.tolist()])
