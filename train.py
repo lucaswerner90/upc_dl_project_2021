@@ -2,90 +2,92 @@ import time
 import torch
 import math
 import os
+from model.visualization import Visualization
+
+
 def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device, log_interval):
-	"""
+    """
 	Train single epoch
 	"""
-	#device = 'cpu'
-	model.train()
-	total_loss=0.
-	for i, batch in enumerate(iter(train_loader)):
-		batch_start_time = time.time()
-		img, target = batch
-		img, target = img.to(device), target.to(device)
-		
-		optimizer.zero_grad()
+    # device = 'cpu'
+    model.train()
+    total_loss = 0.
+    for i, batch in enumerate(iter(train_loader)):
+        batch_start_time = time.time()
+        img, target = batch
+        img, target = img.to(device), target.to(device)
 
-		#TODO: introduce for loop to make sentence
-		output, _ = model(img, target)
-		loss = criterion(output, target[:,1:])
-		loss.backward()
+        optimizer.zero_grad()
 
-		torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.25)
+        # TODO: introduce for loop to make sentence
+        output, _ = model(img, target)
+        loss = criterion(output, target[:, 1:])
+        loss.backward()
 
-		optimizer.step()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.25)
 
-		total_loss += loss.item()
+        optimizer.step()
 
-		print('-'*89)
-		print(f'| epoch {epoch:3d} | {i:5d}/{len(train_loader):5d} batches | loss {total_loss:5.2f} | ppl {math.exp(total_loss):8.2f}')
-		print('-'*89)
-		print(f'Gen: {model.vocab.generate_caption(torch.argmax(output[0].transpose(1,0), dim=-1))}')
-		print(f'Exp: {model.vocab.generate_caption(target[0,1:])}')
-		print('-'*89)
-		total_loss = 0.
+        total_loss += loss.item()
 
-def evaluate(model,test_loader, vocab, device,criterion):#TODO:add device
-	model.eval()
+        print('-' * 89)
+        print(
+            f'| epoch {epoch:3d} | {i:5d}/{len(train_loader):5d} batches | loss {total_loss:5.2f} | ppl {math.exp(total_loss):8.2f}')
+        print('-' * 89)
+        print(f'Gen: {model.vocab.generate_caption(torch.argmax(output[0].transpose(1, 0), dim=-1))}')
+        print(f'Exp: {model.vocab.generate_caption(target[0, 1:])}')
+        print('-' * 89)
+        total_loss = 0.
 
-	total_loss = 0.
-	sentences = []
-	#device= 'cpu'
-	with torch.no_grad():
-		for idx, batch in enumerate(iter(test_loader)):
-			img, target = batch
-			img = img.to(device)
-			target = target.to(device)
-			for i in range(img.shape[0]):
-				sentence = model.inference(image=img[i].unsqueeze(0),vocab=vocab)
-				
-			
 
-			caption = ' '.join(sentence)
+def evaluate(model, test_loader, vocab, device, criterion):  # TODO:add device
+    model.eval()
 
-			total_loss += target.numel()*criterion(sentence,target).item()
-			n += target.numel()
+    total_loss = 0.
+    sentences = []
+    # device= 'cpu'
+    with torch.no_grad():
+        for idx, batch in enumerate(iter(test_loader)):
+            img, target = batch
+            img = img.to(device)
+            target = target.to(device)
+            for i in range(img.shape[0]):
+                sentence = model.inference(image=img[i].unsqueeze(0), vocab=vocab)
 
-		return total_loss / n, caption
+            caption = ' '.join(sentence)
+            Visualization.show_image(img[0], title=caption)  # showing expected image
+            total_loss += target.numel() * criterion(sentence, target).item()
+            n += target.numel()
+
+        return total_loss / n, caption
 
 
 def save_model(model, epoch):
-	"""
+    """
 	Function to save current model
 	"""
-	filename = os.path.join('model','checkpoints','Epoch_'+str(epoch)+'_model_state.pth')
-	model_state = {
-		'epoch':epoch,
-		'model':model.state_dict()
-	}
-	torch.save(model_state, filename)
+    filename = os.path.join('model', 'checkpoints', 'Epoch_' + str(epoch) + '_model_state.pth')
+    model_state = {
+        'epoch': epoch,
+        'model': model.state_dict()
+    }
+    torch.save(model_state, filename)
 
-def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, device,log_interval):
-	"""
+
+def train(num_epochs, model, train_loader, test_loader, optimizer, criterion, device, log_interval):
+    """
 	Executes model training. Saves model to a file every epoch.
-	"""	
+	"""
 
-	for epoch in range(1,num_epochs+1):
+    for epoch in range(1, num_epochs + 1):
 
-		train_single_epoch(epoch, model, train_loader,optimizer, criterion, device, log_interval)
+        train_single_epoch(epoch, model, train_loader, optimizer, criterion, device, log_interval)
 
-		if epoch % 5 == 0:
-			save_model(model, epoch)
-		
-		# val_loss, _ = evaluate(model,test_loader,vocab,device,criterion)
+        if epoch % 5 == 0:
+            save_model(model, epoch)
 
-		# print('-' * 89)
-		# print(f'| end of epoch {epoch} | time: {(time.time() - epoch_start_time):.2f}s | valid loss {val_loss:.2f}')
-		# print('-' * 89)
+    # val_loss, _ = evaluate(model,test_loader,vocab,device,criterion)
 
-		
+    # print('-' * 89)
+    # print(f'| end of epoch {epoch} | time: {(time.time() - epoch_start_time):.2f}s | valid loss {val_loss:.2f}')
+    # print('-' * 89)
