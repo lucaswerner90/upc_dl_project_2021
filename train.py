@@ -3,6 +3,10 @@ import torch
 import math
 import os
 from model.visualization import Visualization
+from torchtext.data.metrics import bleu_score
+
+
+
 
 
 def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device, log_interval):
@@ -37,6 +41,9 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device,
         print(f'Gen: {model.vocab.generate_caption(torch.argmax(output[0].transpose(1, 0), dim=-1))}')
         print(f'Exp: {model.vocab.generate_caption(target[0, 1:])}')
         print('-' * 89)
+        candidate_corpus = [model.vocab.generate_caption(torch.argmax(output[0].transpose(1, 0), dim=-1))]
+        reference_corpus = [model.vocab.generate_caption(target[0, 1:])]
+        print(f'Bleu score: {bleu_score(candidate_corpus, reference_corpus)}')
         total_loss = 0.
 
 
