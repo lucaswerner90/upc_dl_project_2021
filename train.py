@@ -64,7 +64,7 @@ def evaluate(model, test_loader, vocab, device, criterion):  # TODO:add device
 
             caption = ' '.join(sentence)
             Visualization.show_image(img[0], title=caption)  # showing expected image
-            Visualization.plot_attention((img[0]), sentence, alphas)
+            Visualization.plot_attention((img[0]), sentence, alphas) # plotting attention
             total_loss += target.numel() * criterion(sentence, target).item()
             n += target.numel()
 

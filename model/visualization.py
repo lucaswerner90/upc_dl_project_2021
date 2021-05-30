@@ -54,7 +54,7 @@ class Visualization:
         plt.tight_layout()
         plt.show()
 
-    # TODO:integrate the following function
+    # TODO:clean commented lines once the code works
     # def get_caps_from(features_tensors):
     #     # generate the caption
     #     model.eval()
