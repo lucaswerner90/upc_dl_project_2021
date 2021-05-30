@@ -54,17 +54,19 @@ class Visualization:
         plt.tight_layout()
         plt.show()
 
-#TODO: how to integrate get caps
-# def get_caps_from(features_tensors):
-#     # generate the caption
-#     model.eval()
-#     with torch.no_grad():
-#         features = model.encoder(features_tensors.to(device))
-#         caps, alphas = model.decoder.generate_caption(features, vocab=dataset.vocab)
-#         caption = ' '.join(caps)
-#         show_image(features_tensors[0], title=caption)
-#
-#     return caps, alphas
+    # TODO:integrate the following function
+    # def get_caps_from(features_tensors):
+    #     # generate the caption
+    #     model.eval()
+    #     with torch.no_grad():
+    #         features = model.encoder(features_tensors.to(device))
+    #         caps, alphas = model.decoder.generate_caption(features, vocab=dataset.vocab)
+    #         caption = ' '.join(caps)
+    #         show_image(features_tensors[0], title=caption)
+    #
+    #     return caps, alphas
+
+
 #
 # #show any 1
 # dataiter = iter(data_loader)
