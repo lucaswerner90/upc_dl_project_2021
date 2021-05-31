@@ -10,9 +10,5 @@
 	"python.linting.enabled": true,
 	"python.analysis.autoImportCompletions": true,
 	"python.languageServer": "Pylance",
-	"python.analysis.extraPaths": [
-		"./dataset",
-		"./model"
-	],
-	"python.pythonPath": "C:\\Users\\raigo\\.conda\\envs\\aidl-session3\\python.exe"
+	"python.analysis.extraPaths": ["./dataset", "./model"]
 }
