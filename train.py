@@ -60,7 +60,7 @@ def evaluate(model, test_loader, vocab, device, criterion):  # TODO:add device
             target = target.to(device)
             for i in range(img.shape[0]):
                 sentence = model.inference(image=img[i].unsqueeze(0), vocab=vocab)
-                alphas = model.inference_for_alphas(image=img[i].unsqueeze(0), vocab=vocab)
+                alphas = model.forward(image=img[i].unsqueeze(0), vocab=vocab)[1]
 
             caption = ' '.join(sentence)
             Visualization.show_image(img[0], title=caption)  # showing expected image
