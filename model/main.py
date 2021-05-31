@@ -62,22 +62,3 @@ class ImageCaptioningModel(nn.Module):
                 break
         return sentence
 
-    def inference_for_alphas(self, image, vocab: Vocabulary):
-        image_features = self.encoder(image)
-        hidden = self.decoder.init_hidden(image.shape[0])
-
-        if torch.cuda.is_available():
-            word = torch.cuda.IntTensor([vocab.word_to_index['<START>']])
-        else:
-            word = torch.tensor(vocab.word_to_index['<START>'])
-        sentence = [word.tolist()]
-
-        for i in range(self.caption_max_length):
-            alphas, weighted_features = self.attention.forward(image_features, hidden)
-            predictions_t, hidden = self.decoder.forward(weighted_features, word, hidden)
-            word = torch.argmax(predictions_t, dim=-1)
-            sentence.append(word.tolist())
-
-            if word[0].tolist() == vocab.word_to_index['<END>']:
-                break
-        return alphas

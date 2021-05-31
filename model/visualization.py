@@ -53,27 +53,3 @@ class Visualization:
 
         plt.tight_layout()
         plt.show()
-
-    # TODO:clean commented lines once the code works
-    # def get_caps_from(features_tensors):
-    #     # generate the caption
-    #     model.eval()
-    #     with torch.no_grad():
-    #         features = model.encoder(features_tensors.to(device))
-    #         caps, alphas = model.decoder.generate_caption(features, vocab=dataset.vocab)
-    #         caption = ' '.join(caps)
-    #         show_image(features_tensors[0], title=caption)
-    #
-    #     return caps, alphas
-
-
-#
-# #show any 1
-# dataiter = iter(data_loader)
-# images,_ = next(dataiter)
-#
-# img = images[0].detach().clone()
-# img1 = images[0].detach().clone()
-# caps,alphas = get_caps_from(img.unsqueeze(0))
-#
-# plot_attention(img1, caps, alphas)
