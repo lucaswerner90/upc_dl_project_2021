@@ -38,6 +38,7 @@ class Visualization:
         self.img[2] += 0.456
 
         image = self.img.numpy().transpose((1, 2, 0))
+        plt.imshow(image)
         temp_image = image
 
         fig = plt.figure(figsize=(15, 15))
