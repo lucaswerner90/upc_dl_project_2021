@@ -33,23 +33,32 @@ def main():
 		# standard mean and standard deviation
 		transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225]),
 	])
-	dataset = Flickr8kDataset(transform=transform,reduce=True, vocab_max_size=hparams['VOCAB_SIZE'])
+
+    train_split = Flickr8kDataset(transform=transform,reduce=True, vocab_max_size=hparams['VOCAB_SIZE'],split='train')
+    test_split = Flickr8kDataset(transform=transform,reduce=True, vocab_max_size=hparams['VOCAB_SIZE'],split='test')
+	eval_split = Flickr8kDataset(transform=transform,reduce=True, vocab_max_size=hparams['VOCAB_SIZE'],split='eval')
+
 
 	# Test the dataloader
 	model = ImageCaptioningModel(
 		embed_size=hparams['EMBED_SIZE'],
 		image_features_dim=512,
-		vocab_size=len(dataset.vocab.word_to_index),
+		vocab_size=len(train_split.vocab.word_to_index),
 		attention_dim=hparams['ATTENTION_DIM'],
 		caption_max_length=hparams['MAX_LENGTH']
 	)
 
-	train_split, test_split = random_split(dataset,[32364,8091]) #80% train, 20% test
-	train_loader = DataLoader(train_split, shuffle=True, batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(pad_idx=dataset.vocab.word_to_index['<PAD>'],batch_first=True))
-	test_loader = DataLoader(test_split,batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(pad_idx=dataset.vocab.word_to_index['<PAD>'],batch_first=True))
+
+	train_loader = DataLoader(train_split, shuffle=True, batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(pad_idx=train_split.vocab.word_to_index['<PAD>'],batch_first=True))
+	
+	## En el collate_fn he de posar-hi train_split??
+	eval_loader = DataLoader(eval_split,batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(pad_idx=train_split.vocab.word_to_index['<PAD>'],batch_first=True))
+	test_loader = DataLoader(test_split,batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(pad_idx=train_split.vocab.word_to_index['<PAD>'],batch_first=True))
 	
 	optimizer = optim.Adam(model.parameters(),lr=hparams['LEARNING_RATE'])
-	criterion = nn.CrossEntropyLoss(ignore_index=dataset.vocab.word_to_index['<PAD>'])
+	
+	## En el ignore_index de posar-hi train_split??
+	criterion = nn.CrossEntropyLoss(ignore_index=train_split.vocab.word_to_index['<PAD>'])
 
 	train(
 		num_epochs=hparams['NUM_EPOCHS'],
