@@ -3,14 +3,14 @@ from torch import nn
 from model.attention import Attention
 
 #from encoder import Encoder
-from model.encoder import Encoder
+import model.encoder as encoders
 from model.decoder import Decoder
 from dataset.vocabulary import Vocabulary
 
 class ImageCaptioningModel(nn.Module):
 	def __init__(self, image_features_dim:int, embed_size:int, vocab_size:int, attention_dim:int, caption_max_length:int):
 		super(ImageCaptioningModel, self).__init__()
-		self.encoder = Encoder()
+		self.encoder = encoders.Encoder_DenseNet()
 		self.attention = Attention(image_features_dim=image_features_dim, decoder_hidden_state_dim=embed_size, attention_dim=attention_dim)
 		self.decoder = Decoder(image_features_dim, vocab_size, embed_size, embed_size)
 		self.caption_max_length = caption_max_length
