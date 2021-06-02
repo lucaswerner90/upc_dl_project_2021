@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
 from torchvision import transforms
+import pandas as pd
 
 from dataset.main import Flickr8kDataset
 from dataset.caps_collate import CapsCollate
@@ -31,13 +32,46 @@ def main():
 		# we should use the ImageNet values to normalize the dataset.
 		# Otherwise we could just normalize the values between -1 and 1 using the 
 		# standard mean and standard deviation
-		transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225]),
+		transforms.Normalize(mean=hparams['IMAGE_NET_MEANS'],std=hparams['IMAGE_NET_STDS']),
 	])
 
-    train_split = Flickr8kDataset(transform=transform,reduce=True, vocab_max_size=hparams['VOCAB_SIZE'],split='train')
-    test_split = Flickr8kDataset(transform=transform,reduce=True, vocab_max_size=hparams['VOCAB_SIZE'],split='test')
-	eval_split = Flickr8kDataset(transform=transform,reduce=True, vocab_max_size=hparams['VOCAB_SIZE'],split='eval')
+	# dataset = Flickr8kDataset(transform=transform,reduce=True, vocab_max_size=hparams['VOCAB_SIZE'])
 
+	# Create captions files for train and test
+	dataset_df = pd.read_csv(open(os.path.join('data','captions.txt'),'r'))
+
+	for set in ['train', 'test']:
+		if set == 'train':
+			# Open file with the images for train
+			imgs_file = open(os.path.join('data','Flickr_8k.trainImages.txt'), "r")
+		if set == 'test':
+			# Open file with the images for test
+			imgs_file = open(os.path.join('data','Flickr_8k.testImages.txt'), "r")
+
+	    # Load train images file names to a list
+		imgs = []
+		for linea in imgs_file:
+			imgs.append(linea.rstrip('\n'))
+		imgs_file.close()
+            
+		# Convert the dataframe to list
+		#	llista = list(zip(self.dataframe['image'],self.dataframe['caption']))
+		llista = dataset_df.values.tolist()
+    	# Create a list with the image and captions of the images requested (train, test or eval)
+		c=[]
+		for a,b in llista:
+			if a in imgs:
+				c.append([a,b])
+		# Convert the list to a dataframe
+		new_dataframe = pd.DataFrame(c, columns = ['image','caption'])
+		# Write the dataframe to file
+		if set == 'train':
+			new_dataframe.to_csv(os.path.join('data','train_captions.txt'),index=False)
+		if set == 'test':
+			new_dataframe.to_csv(os.path.join('data','test_captions.txt'),index=False)
+
+	train_split = Flickr8kDataset(transform=transform,reduce=True, vocab_max_size=hparams['VOCAB_SIZE'])
+	test_split = Flickr8kDataset(transform=transform,reduce=True, vocab_max_size=hparams['VOCAB_SIZE'])
 
 	# Test the dataloader
 	model = ImageCaptioningModel(

@@ -15,40 +15,12 @@ class Flickr8kDataset(Dataset):
     Dataset for Flickr8k data treatment
     """
 
-    def __init__(self, dataset_folder=os.path.join('data'),transform=None,reduce=False,vocab_max_size=5000,split='train'):
+    def __init__(self, dataset_folder=os.path.join('data'),transform=None,reduce=False,vocab_max_size=5000):
         super(Flickr8kDataset, self).__init__()
         self.transform = transform
         self.images_folder = os.path.join(dataset_folder,'Images')
         
         self.dataframe = pd.read_csv(open(os.path.join(dataset_folder,'captions.txt'),'r'))
-
-        # Open file with the images for train, test or eval
-        if split=='train':
-            imgs_file = open(os.path.join('data','Flickr_8k.trainImages.txt'), "r")
-        elif split=='test':
-            imgs_file = open(os.path.join('data','Flickr_8k.testImages.txt'), "r")
-        if split=='eval':
-            imgs_file = open(os.path.join('data','Flickr_8k.devImages.txt'), "r")
-
-        # Load images file names to a list
-        imgs = []
-        for linea in imgs_file:
-            imgs.append(linea.rstrip('\n'))
-        imgs_file.close()
-            
-        # Convert the dataframe to list
-        llista = list(zip(self.dataframe['image'],self.dataframe['caption']))
-        #  print(len(llista))
-
-        # Create a list with the image and captions of the images requested (train, test or eval)
-        c=[]
-        for a,b in llista:
-            if a in imgs:
-                c.append([a,b])
-        #  print(len(c))     
-
-        # Convert the list to a dataframe
-        self.dataframe = pd.DataFrame(c, columns = ['image','caption'])
 
         self.caption = self.dataframe['caption']
         self.vocab = Vocabulary()
@@ -85,7 +57,6 @@ class Flickr8kDataset(Dataset):
             string:			Caption of the image
         """
         filename, caption = self.dataframe.iloc[idx,:]
-        print(filename, caption)
         image = self.read_image(filename)
 
         if self.transform:
