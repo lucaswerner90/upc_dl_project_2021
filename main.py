@@ -73,6 +73,7 @@ def main():
 		criterion=criterion,
 		device=hparams['DEVICE'],
 		log_interval=hparams['LOG_INTERVAL'],
+		vocab=dataset.vocab
 	)
 
 

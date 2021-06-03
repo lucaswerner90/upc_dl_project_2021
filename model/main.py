@@ -46,14 +46,19 @@ class ImageCaptioningModel(nn.Module):
 			word = torch.cuda.IntTensor([vocab.word_to_index['<START>']])
 		else:
 			word = torch.tensor(vocab.word_to_index['<START>'])
-		sentence = [word.tolist()]
-		
+		sentence = [word.item()]
+		attention_weights=[]
 		for i in range(self.caption_max_length):
 			alphas, weighted_features = self.attention.forward(image_features, hidden)
 			predictions_t, hidden = self.decoder.forward(weighted_features, word, hidden)
 			word = torch.argmax(predictions_t, dim=-1)
-			sentence.append(word.tolist())
-			
-			if word[0].tolist()==vocab.word_to_index['<END>']:
+			if word[0].item()==vocab.word_to_index['<END>']:
 				break
-		return sentence
+			sentence.append(word.item())
+			attention_weights.append(alphas)
+		if torch.cuda.is_available():
+			sentence=torch.cuda.IntTensor(sentence[1:])
+		else:
+			sentence=torch.tensor(sentence[1:])
+		sentence=vocab.generate_caption(sentence)
+		return sentence, attention_weights[1:]
