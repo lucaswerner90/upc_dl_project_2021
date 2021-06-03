@@ -1,7 +1,7 @@
 import torch
 import os
 from model.visualization import Visualization
-from tensorboard.main import tensorboard_panel
+from panel.main import tensorboard_panel
 
 
 def write_on_tensorboard(epoch:int, loss:int, bleu:int, image, expected_captions, generated_captions):
@@ -76,7 +76,6 @@ def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, dev
 	"""	
 
 	for epoch in range(1,num_epochs+1):
-
 		train_single_epoch(epoch, model, train_loader,optimizer, criterion, device)
 
 		if epoch % 5 == 0:
