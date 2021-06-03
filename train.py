@@ -53,7 +53,7 @@ def save_model(model, epoch):
 
 def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, device,log_interval,vocab):
 	"""
-	Executes model training. Saves model to a file every epoch.
+	Executes model training. Saves model to a file every 5 epoch.
 	"""	
 
 	for epoch in range(1,num_epochs+1):
@@ -63,7 +63,7 @@ def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, dev
 		if epoch % 5 == 0:
 			save_model(model, epoch)
 		
-		val_loss = evaluate(model=model,test_loader=test_loader,vocab=vocab,device=device,criterion=criterion)
+		val_loss = evaluate(model=model,test_loader=test_loader,vocab=vocab,device=device,epoch=epoch)
 
 		print('-' * 89)
 		print(f'| end of epoch {epoch} | time: {(time.time() - epoch_start_time):.2f}s | valid loss {val_loss:.2f}')

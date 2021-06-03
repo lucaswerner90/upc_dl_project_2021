@@ -6,13 +6,13 @@ from nltk.translate.bleu_score import corpus_bleu
 from model.visualization import Visualization
 
 
-def evaluate(model, test_loader, vocab, device, criterion):  # TODO:add device
+def evaluate(model, test_loader, vocab, device, epoch):
 	model.eval()
 
 	total_loss = 0.
 
 	
-
+	i=1
 	with torch.no_grad():
 		for idx, batch in enumerate(iter(test_loader)):
 			img, target = batch
@@ -34,12 +34,17 @@ def evaluate(model, test_loader, vocab, device, criterion):  # TODO:add device
 			
 
 			if idx % 10 == 0:
+				
 				example=' '.join(sentences[5])
+				reference=vocab.generate_caption(target[5,1:])
 				print(f'Evaluating batch {idx} / {len(test_loader)}...')
 				print(f'Gen example: {example}')
-				print(f'Exp example: {vocab.generate_caption(target[5,1:])}')
-				Visualization.show_image(img[5],title=example)
-				# Visualization.plot_attention(img[idx],sentences[idx],attention_w[idx])
-				pass
+				print(f'Exp example: {reference}')
+				string=str(i)+'_epoch_'+str(epoch)+'_plot.png'
+				string_att=str(i)+'_epoch_'+str(epoch)+'_plot_att.png'
+				Visualization.show_image(img[5],title=example,fn=string)
+				Visualization.plot_attention(img[5],sentences[5][:-1],attention_w[5],fn=string_att)
+				i+=1
+				
 
 		return total_loss / (idx+1)
