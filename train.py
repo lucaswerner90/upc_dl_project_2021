@@ -40,8 +40,6 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device,
 		total_loss = 0.
 
 
-
-
 def save_model(model, epoch):
 	"""
 	Function to save current model
