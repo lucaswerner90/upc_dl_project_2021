@@ -23,7 +23,7 @@ def evaluate(model, test_loader, vocab, device, epoch):
 			sentences = []
 			attention_w = []
 			for i in range(img.shape[0]):
-				sentence, attention_w_t = model.inference(image=img[i].unsqueeze(0), vocab=vocab)
+				sentence, attention_w_t = model.inference(image=img[i].unsqueeze(0))
 				sentence_s=sentence.split(' ')
 				sentence_s.append('<END>')
 				sentences.append(sentence_s)
