@@ -3,6 +3,7 @@ import nltk
 from torch.nn.functional import pad
 from torch.nn.utils.rnn import pad_packed_sequence, pad_sequence
 from nltk.translate.bleu_score import corpus_bleu
+from model.visualization import Visualization
 
 
 def evaluate(model, test_loader, vocab, device, criterion):  # TODO:add device
@@ -37,7 +38,7 @@ def evaluate(model, test_loader, vocab, device, criterion):  # TODO:add device
 				print(f'Evaluating batch {idx} / {len(test_loader)}...')
 				print(f'Gen example: {example}')
 				print(f'Exp example: {vocab.generate_caption(target[5,1:])}')
-				#Visualization.show_image(img[idx],title=' '.join(sentences[idx]))
+				Visualization.show_image(img[5],title=example)
 				# Visualization.plot_attention(img[idx],sentences[idx],attention_w[idx])
 				pass
 
