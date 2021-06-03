@@ -5,12 +5,11 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Python: Archivo actual",
+      "name": "Python: Current File",
       "type": "python",
       "request": "launch",
       "program": "${file}",
-      "env": { "PYDEVD_WARN_EVALUATION_TIMEOUT": "500" },
       "console": "integratedTerminal"
-    }
+    },
   ]
 }
