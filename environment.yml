@@ -1,47 +1,12 @@
-name: upc_dl_project_2021
+name: upc_project
 channels:
   - defaults
 dependencies:
-  - ca-certificates=2021.4.13=hecd8cb5_1
-  - certifi=2020.12.5=py38hecd8cb5_0
-  - click=8.0.1=pyhd3eb1b0_0
-  - importlib-metadata=3.10.0=py38hecd8cb5_0
-  - joblib=1.0.1=pyhd3eb1b0_0
-  - libcxx=10.0.0=1
-  - libffi=3.3=hb1e8313_2
-  - ncurses=6.2=h0a44026_1
-  - nltk=3.6.2=pyhd3eb1b0_0
-  - openssl=1.1.1k=h9ed2024_0
-  - pip=21.0.1=py38hecd8cb5_0
-  - python=3.8.8=h88f2d9e_5
-  - readline=8.1=h9ed2024_0
-  - regex=2021.4.4=py38h9ed2024_0
-  - setuptools=52.0.0=py38hecd8cb5_0
-  - sqlite=3.35.4=hce871da_0
-  - tk=8.6.10=hb0a8c7a_0
-  - tqdm=4.59.0=pyhd3eb1b0_1
-  - wheel=0.36.2=pyhd3eb1b0_0
-  - xz=5.2.5=h1de35cc_0
-  - zipp=3.4.1=pyhd3eb1b0_0
-  - zlib=1.2.11=h1de35cc_3
-  - pip:
-    - autopep8==1.5.7
-    - chardet==4.0.0
-    - idna==2.10
-    - kaggle==1.5.12
-    - numpy==1.20.2
-    - pandas==1.2.4
-    - pillow==8.2.0
-    - pycodestyle==2.7.0
-    - python-dateutil==2.8.1
-    - python-slugify==5.0.2
-    - pytz==2021.1
-    - requests==2.25.1
-    - six==1.15.0
-    - text-unidecode==1.3
-    - toml==0.10.2
-    - torch==1.8.1
-    - torchvision==0.9.1
-    - typing-extensions==3.7.4.3
-    - urllib3==1.26.4
-prefix: /Users/lucaswerner/opt/anaconda3/envs/upc_dl_project_2021
+  - python=3.8
+  - nltk
+  - pytorch
+  - torchvision
+  - pandas
+  - tensorboard
+  - matplotlib
+prefix: /Users/lucaswerner/opt/anaconda3/envs/upc_project
