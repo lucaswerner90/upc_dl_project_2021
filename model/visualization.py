@@ -47,7 +47,7 @@ class Visualization:
         for l in range(len_result):
             temp_att = attention_plot[l].reshape(7, 7)
 
-            ax = fig.add_subplot((len_result+1)//3, 3, l + 1)
+            ax = fig.add_subplot(len_result//3+1, 3, l + 1)
             ax.set_title(result[l])
             img = ax.imshow(temp_image)
             ax.imshow(temp_att.cpu(), cmap='gray', alpha=0.6, extent=img.get_extent())
