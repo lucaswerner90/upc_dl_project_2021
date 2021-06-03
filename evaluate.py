@@ -3,7 +3,6 @@ import nltk
 from torch.nn.functional import pad
 from torch.nn.utils.rnn import pad_packed_sequence, pad_sequence
 from nltk.translate.bleu_score import corpus_bleu
-from model.visualization import Visualization
 
 
 def evaluate(model, test_loader, vocab, device, criterion):  # TODO:add device
