@@ -1,24 +1,14 @@
-import time
 import torch
 import os
 from model.visualization import Visualization
-from torch.utils.tensorboard import SummaryWriter
-import matplotlib.pyplot as plt
+from tensorboard.main import tensorboard_panel
 
-writer = SummaryWriter()
 
-def write_on_tensorboard(writer:SummaryWriter, epoch:int, loss:int, bleu:int, image, expected_captions, generated_captions):
-	writer.add_text('Expected', expected_captions[0], epoch)
-	writer.add_text('Generated', generated_captions[0], epoch)
-	writer.add_scalar('Loss/train', loss, epoch)
-
-	image = Visualization.process_image(image)
-	plt.tight_layout()
-	fig = plt.figure()
-	ax = fig.add_subplot(1,1,1)
-	ax.set_title(f'Exp: {expected_captions[0]}\n Gen: {generated_captions[0]}',fontsize=8)
-	ax.imshow(image)
-	writer.add_figure('Generated captions',fig, global_step=epoch)
+def write_on_tensorboard(epoch:int, loss:int, bleu:int, image, expected_captions, generated_captions):
+	tensorboard_panel.add_sentences_comparison(epoch,expected_captions[0],generated_captions[0])
+	tensorboard_panel.add_loss(epoch,loss)
+	tensorboard_panel.add_bleu(epoch,bleu)
+	tensorboard_panel.add_image(epoch,image,expected_captions[0],generated_captions[0])
 
 
 def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device):
@@ -44,7 +34,7 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device)
 		reference_corpus = [model.vocab.generate_caption(target[0, 1:])]
 		bleu = 0
 		# bleu = bleu_score(candidate_corpus, reference_corpus)
-		write_on_tensorboard(writer,i*(epoch+1),loss.item(),bleu,img[0],reference_corpus,candidate_corpus)
+		write_on_tensorboard(i*(epoch+1),loss.item(),bleu,img[0],reference_corpus,candidate_corpus)
 
 def evaluate(model,test_loader, vocab, device,criterion):
 	model.eval()

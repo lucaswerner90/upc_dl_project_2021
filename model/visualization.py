@@ -61,9 +61,9 @@ class Visualization:
 
         fig = plt.figure(figsize=(15, 15))
 
-        len_result = len(result)
+        len_result = len(self.result)
         for l in range(len_result):
-            temp_att = attention_plot[l].reshape(7, 7)
+            temp_att = self.attention_plot[l].reshape(7, 7)
 
             ax = fig.add_subplot(len_result//3+1, 3, l + 1)
             ax.set_title(result[l])
