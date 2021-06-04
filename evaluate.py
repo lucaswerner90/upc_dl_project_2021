@@ -1,5 +1,6 @@
 import torch
 import nltk
+import random
 from torch.nn.functional import pad
 from torch.nn.utils.rnn import pad_packed_sequence, pad_sequence
 from nltk.translate.bleu_score import corpus_bleu
@@ -12,7 +13,7 @@ def evaluate(model, test_loader, vocab, device, epoch):
 	total_loss = 0.
 
 	
-	i=1
+	
 	with torch.no_grad():
 		for idx, batch in enumerate(iter(test_loader)):
 			img, target = batch
@@ -34,17 +35,17 @@ def evaluate(model, test_loader, vocab, device, epoch):
 			
 
 			if idx % 10 == 0:
-				
-				example=' '.join(sentences[5])
-				reference=vocab.generate_caption(target[5,1:])
+				num_img=random.randint(0,img.shape[0])
+				example=' '.join(sentences[num_img])
+				reference=vocab.generate_caption(target[num_img,1:])
 				print(f'Evaluating batch {idx} / {len(test_loader)}...')
 				print(f'Gen example: {example}')
 				print(f'Exp example: {reference}')
-				string=str(i)+'_epoch_'+str(epoch)+'_plot.png'
-				string_att=str(i)+'_epoch_'+str(epoch)+'_plot_att.png'
-				Visualization.show_image(img[5],title=example,fn=string)
-				Visualization.plot_attention(img[5],sentences[5][:-1],attention_w[5],fn=string_att)
-				i+=1
+				string=str(num_img)+'_epoch_'+str(epoch)+'_plot.png'
+				string_att=str(num_img)+'_epoch_'+str(epoch)+'_plot_att.png'
+				Visualization.show_image(img[num_img],title=example,fn=string)
+				Visualization.plot_attention(img[num_img],sentences[num_img][:-1],attention_w[num_img],fn=string_att)
+				
 				
 
 		return total_loss / (idx+1)
