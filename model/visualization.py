@@ -1,4 +1,3 @@
-import torch
 import matplotlib.pyplot as plt
 
 
@@ -6,10 +5,6 @@ class Visualization:
     """
     Visualize images and plot_attention
     """
-
-    def __init__(self, img=None):
-        self.img = img
-    
     @staticmethod
     def process_image(img):
         """
@@ -24,7 +19,7 @@ class Visualization:
 
         return img.numpy().transpose((1, 2, 0))
 
-    def show_image(self, img, title=None):
+    def show_image(img, title=None,fn='plot.png'):
         """Imshow for Tensor."""
 
         # denormalize
@@ -61,9 +56,9 @@ class Visualization:
 
         fig = plt.figure(figsize=(15, 15))
 
-        len_result = len(self.result)
+        len_result = len(result)
         for l in range(len_result):
-            temp_att = self.attention_plot[l].reshape(7, 7)
+            temp_att = attention_plot[l].reshape(7, 7)
 
             ax = fig.add_subplot(len_result//3+1, 3, l + 1)
             ax.set_title(result[l])
