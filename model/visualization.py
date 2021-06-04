@@ -5,6 +5,19 @@ class Visualization:
     """
     Visualize images and plot_attention
     """
+    @staticmethod
+    def process_image(img):
+        """
+        Preprocess the image and returns it as a np.array
+        """
+        img[0] = img[0] * 0.229
+        img[1] = img[1] * 0.224
+        img[2] = img[2] * 0.225
+        img[0] += 0.485
+        img[1] += 0.456
+        img[2] += 0.406
+
+        return img.numpy().transpose((1, 2, 0))
 
     def show_image(img, title=None,fn='plot.png'):
         """Imshow for Tensor."""

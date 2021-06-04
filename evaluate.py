@@ -1,8 +1,5 @@
 import torch
-import nltk
 import random
-from torch.nn.functional import pad
-from torch.nn.utils.rnn import pad_packed_sequence, pad_sequence
 from nltk.translate.bleu_score import corpus_bleu
 from model.visualization import Visualization
 
@@ -35,7 +32,7 @@ def evaluate(model, test_loader, vocab, device, epoch):
 			
 
 			if idx % 10 == 0:
-				num_img=random.randint(0,img.shape[0])
+				num_img=random.randint(0,img.shape[0]-1)
 				example=' '.join(sentences[num_img])
 				reference=vocab.generate_caption(target[num_img,1:])
 				print(f'Evaluating batch {idx} / {len(test_loader)}...')
