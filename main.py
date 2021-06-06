@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
 from torchvision import transforms
+import pandas as pd
 
 from dataset.main import Flickr8kDataset
 from dataset.caps_collate import CapsCollate
@@ -26,14 +27,12 @@ def main():
 	transform = transforms.Compose([
 		transforms.ToTensor(),
 		transforms.Resize((hparams['IMAGE_SIZE'],hparams['IMAGE_SIZE'])),
-		transforms.RandomCrop(hparams['IMAGE_SIZE']),
-        # The normalize parameters depends on the model we're gonna use
-        # If we apply transfer learning from a model that used ImageNet, then
-        # we should use the ImageNet values to normalize the dataset.
-        # Otherwise we could just normalize the values between -1 and 1 using the
-        # standard mean and standard deviation
-        # transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225]),
-		transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225]),
+		# The normalize parameters depends on the model we're gonna use
+		# If we apply transfer learning from a model that used ImageNet, then
+		# we should use the ImageNet values to normalize the dataset.
+		# Otherwise we could just normalize the values between -1 and 1 using the 
+		# standard mean and standard deviation
+		transforms.Normalize(mean=hparams['IMAGE_NET_MEANS'],std=hparams['IMAGE_NET_STDS']),
 	])
 	dataset = Flickr8kDataset(dataset_folder=CONFIGURATION['DATASET_FOLDER'], transform=transform,
 								reduce=hparams['REDUCE_VOCAB'], vocab_max_size=hparams['VOCAB_SIZE'])
