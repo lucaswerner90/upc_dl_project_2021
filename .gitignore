@@ -133,3 +133,9 @@ notes.txt
 #.vscode settings and launch
 .vscode/launch.json
 .vscode/settings.json
+#model type
+*.pth
+#sample images
+*.png
+
+runs

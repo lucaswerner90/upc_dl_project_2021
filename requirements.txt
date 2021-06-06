@@ -1,5 +1,7 @@
 torch
 torchvision
-pillow
+matplotlib
+tensorboard
+Pillow
 pandas
 nltk

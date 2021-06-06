@@ -1,15 +1,15 @@
 from torch.functional import Tensor
 import torchvision.models as models
 import torch.nn as nn
-
 class Encoder_VGG16(nn.Module):
     def __init__(self):
         super(Encoder_VGG16, self).__init__()
+        print("Extracting feature vectors from the image")
         pretrained_model = models.vgg16(pretrained=True)
         self.conv_base = pretrained_model.features
 
-        # Freeze All layers as they will be used for inference
-        for param in self.conv_base.parameters():  
+        # Freeze All layers
+        for _, param in enumerate(self.conv_base.parameters()):  
             param.requires_grad = False
 
         # Flaten layer that flatten the dimensions 2 and 3 (H and W of the feature maps respectively)
@@ -20,8 +20,8 @@ class Encoder_VGG16(nn.Module):
         features = self.conv_base(x)
         # For an image size of (224x224) --> features dims (batch_size, feat_maps=512, H=7 , W=7)
         features = self.flat(features)
-        # For an image size of (224x224) --> features dims (batch_size, 512, 7x7=49)                    
-        return features
+        # For an image size of (224x224) --> features dims (batch_size, 512, 7x7=49)                       
+        return self.relu(features)
 
 class Encoder_ResNet50(nn.Module):
     def __init__(self):
@@ -70,5 +70,4 @@ class Encoder_DenseNet(nn.Module):
         features = self.flat(features)
         # For an image size of (224x224) --> features dims (batch_size, feat_maps=2208, 7x7=49)
         return self.relu(features)
-
 
