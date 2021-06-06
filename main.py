@@ -33,7 +33,7 @@ def main():
         # Otherwise we could just normalize the values between -1 and 1 using the
         # standard mean and standard deviation
         # transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225]),
-		transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225]),
+		transforms.Normalize(mean=hparams['IMAGENET_MEANS'],std=hparams['IMAGENET_STDS']),
 	])
 	dataset = Flickr8kDataset(dataset_folder=CONFIGURATION['DATASET_FOLDER'], transform=transform,
 								reduce=hparams['REDUCE_VOCAB'], vocab_max_size=hparams['VOCAB_SIZE'])
