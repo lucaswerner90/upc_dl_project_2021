@@ -4,7 +4,6 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
 from torchvision import transforms
-import pandas as pd
 
 from dataset.main import Flickr8kDataset
 from dataset.caps_collate import CapsCollate
