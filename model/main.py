@@ -3,7 +3,7 @@ from torch import nn
 from model.attention import Attention
 
 #from encoder import Encoder
-from model.encoder import Encoder
+from model.encoder import Encoder_VGG16
 from model.decoder import Decoder
 from dataset.vocabulary import Vocabulary
 
@@ -12,7 +12,7 @@ class ImageCaptioningModel(nn.Module):
 		super(ImageCaptioningModel, self).__init__()
 		self.vocab = vocab
 		self.vocab_size = len(self.vocab.word_to_index)
-		self.encoder = Encoder()
+		self.encoder = Encoder_VGG16()
 		self.attention = Attention(image_features_dim=image_features_dim, decoder_hidden_state_dim=embed_size, attention_dim=attention_dim)
 		self.decoder = Decoder(image_features_dim=image_features_dim,vocab_size=self.vocab_size,hidden_size=embed_size,embed_size=embed_size)
 		self.caption_max_length = caption_max_length
