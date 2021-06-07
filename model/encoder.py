@@ -5,7 +5,7 @@ import torch.nn as nn
 class Encoder_VGG16(nn.Module):
     def __init__(self):
         super(Encoder_VGG16, self).__init__()
-        print("Extracting feature vectors from the image")
+
         pretrained_model = models.vgg16(pretrained=True)
         self.conv_base = pretrained_model.features
 
