@@ -2,15 +2,14 @@ import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, random_split
-from torch.utils.data.dataset import Subset
+from torch.utils.data import DataLoader
+
 from torchvision import transforms
-import random
 
 from dataset.main import Flickr8kDataset
 from dataset.caps_collate import CapsCollate
 from model.main import ImageCaptioningModel
-from train import train
+from train import train, split_subsets
 import json
 
 CONFIGURATION = None
@@ -18,7 +17,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 cwd = os.getcwd()
 
 with open(os.path.join(cwd, 'config.json')) as f:
-    CONFIGURATION = json.load(f)
+	CONFIGURATION = json.load(f)
 
 hparams = CONFIGURATION['HPARAMS']
 hparams['DEVICE'] = device
@@ -48,25 +47,9 @@ def main():
 	).to(hparams['DEVICE'])
 
 	## Perform the split of the dataset
-	# Get a list of the first indexes for each image in the dataset and shuffle the list 
-	all_first_index = [*range(0,len(dataset),5)]
-	random.shuffle(all_first_index)
-
-	# Create a list with all the indexes from the shuffled initial indexes
-	all_indexes = []
-	for i in all_first_index:
-		for j in range(i,i+5):
-			all_indexes.append(j)
-
-	# Get the number of images for train and the rest are for test
-	train_percentage = 0.8
-	num_train_imgs = int(len(dataset)/5*train_percentage)
-
-	# Create the subsets for train and test
-	train_split =  Subset(dataset,all_indexes[0:num_train_imgs*5])
-	test_split =  Subset(dataset,all_indexes[num_train_imgs*5:])	
-
-
+	
+	train_split, test_split = split_subsets(dataset,all_captions=True)
+	
 	if (torch.cuda.is_available()):
 		torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
