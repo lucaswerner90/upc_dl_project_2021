@@ -10,5 +10,10 @@
 	"python.linting.enabled": true,
 	"python.analysis.autoImportCompletions": true,
 	"python.languageServer": "Pylance",
-	"python.analysis.extraPaths": ["./dataset", "./model", "./panel"]
+	"python.analysis.extraPaths": [
+		"./dataset",
+		"./model",
+		"./panel"
+	],
+	"python.pythonPath": ".env/bin/python"
 }
