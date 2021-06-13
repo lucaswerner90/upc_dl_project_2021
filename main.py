@@ -43,7 +43,6 @@ def main():
 		embed_size=hparams['EMBED_SIZE'],
 		vocab = dataset.vocab,
 		caption_max_length=hparams['MAX_LENGTH'],
-		attention_dim=hparams['ATTENTION_DIM']
 	).to(hparams['DEVICE'])
 
 	## Perform the split of the dataset
@@ -55,23 +54,17 @@ def main():
 
 	train_loader = DataLoader(train_split, shuffle=True, batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(
 		pad_idx=dataset.vocab.word_to_index['<PAD>'], batch_first=True))
-	test_loader = DataLoader(test_split, batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(
-		pad_idx=dataset.vocab.word_to_index['<PAD>'], batch_first=True))
 
-	optimizer = optim.Adam(model.parameters(), lr=hparams['LEARNING_RATE'])
-	criterion = nn.CrossEntropyLoss(
-		ignore_index=dataset.vocab.word_to_index['<PAD>'])
+	optimizer = optim.Adam(model.parameters(), lr=hparams['LEARNING_RATE'], betas=(0.9, 0.98), eps=1e-9)
+	criterion = nn.CrossEntropyLoss(ignore_index=dataset.vocab.word_to_index['<PAD>'])
 
 	train(
 		num_epochs=hparams['NUM_EPOCHS'],
 		model=model,
 		train_loader=train_loader,
-		test_loader=test_loader,
 		optimizer=optimizer,
 		criterion=criterion,
-		device=hparams['DEVICE'],
-		log_interval=hparams['LOG_INTERVAL'],
-		vocab=dataset.vocab
+		device=hparams['DEVICE']
 	)
 
 
