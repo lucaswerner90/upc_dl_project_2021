@@ -38,9 +38,13 @@ def split_subsets(dataset,train_percentage=0.8,all_captions=True):
 		random.shuffle(all_first_index)
 
 		num_train_imgs = int(len(all_first_index)*train_percentage)
-
 		train_split =  Subset(dataset,all_first_index[0:num_train_imgs])
-		test_split =  Subset(dataset,all_first_index[num_train_imgs:])	
+
+		test_indexes = []
+		for ind in all_first_index[num_train_imgs:]:
+			for i in range(5):
+				test_indexes.append(ind+i) 
+		test_split =  Subset(dataset,test_indexes)	
 		
 	return train_split,test_split
 
