@@ -1,126 +1,28 @@
+import pytest
+
 import os
 import torch
-from torch.utils.data.dataset import Subset
+
 from torchvision import transforms
-import random
+
 import numpy as np
 import pandas as pd
+import json
 import sys
 sys.path.insert(1, './')    ## Este path funciona en caso de ejecutar este fichero desde el directorio base del proyecto, desde el cual cuelgan todos los módulos del proyecto.
 
 from dataset.main import Flickr8kDataset
-from model.main import ImageCaptioningModel
-import json
+from train import split_subsets
 
 CONFIGURATION = None
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 cwd = os.getcwd()
 
 with open(os.path.join(cwd, 'config.json')) as f:
-    CONFIGURATION = json.load(f)
+	CONFIGURATION = json.load(f)
 
 hparams = CONFIGURATION['HPARAMS']
 hparams['DEVICE'] = device
-
-
-def split_subsets(dataset,train_percentage=0.8,all_captions=True):
-	"""
-	Performs the split of the dataset into Train and Test
-	"""	
-	assert len(dataset) == 40455, "The dataset object doesn't contain 40.455 entries!"
-
-	if all_captions==True:
-
-		# Get a list of the first indexes for each image in the dataset and convert to a numpy array  
-		all_indexes = np.array([*range(0,len(dataset))])
-		# Reshape the array so we can shuffle indexes in chunks of 5
-		all_indexes_mat = all_indexes.reshape(-1,5)
-		np.random.shuffle(all_indexes_mat)
-		all_indexes_shuffled = all_indexes_mat.flatten()
-
-		assert len(all_indexes_shuffled) == 40455, "The list with all the indexes that will be splitted into train and test doesn't contain 40455 indexes!"
-		assert len(np.unique(all_indexes_shuffled)) == 40455 , "The list with all the indexes of the database contain non unique indexes!!"
-
-		# Get the number of images for train and the rest are for test
-		num_train_imgs = int(len(all_indexes_shuffled)/5*train_percentage)
-
-		# Create the subsets for train and test
-		train_split =  Subset(dataset,all_indexes_shuffled[0:num_train_imgs*5].tolist())
-		test_split =  Subset(dataset,all_indexes_shuffled[num_train_imgs*5:].tolist())	
-
-		#######     Checking that the image filenames repeat 5 times in the list with the indexes used to creat the TRAIN subset   #######
-
-		# Create and fill img_files list with the image filenames corresponding to the indexes that have been used above for the TRAIN split. 
-		img_files = []
-		for i in all_indexes_shuffled[0:num_train_imgs*5]:
-			img_files.append([dataset.dataframe.iloc[i,0]])
-
-		# GEt the unique values of img_files list. To do that I transfrom the list to a Dataframe and use the method unique() 
-		df_aux = pd.DataFrame(img_files)
-		unique_files =  pd.unique(df_aux[0])
-		assert len(unique_files)*5==len(all_indexes_shuffled[0:num_train_imgs*5]) , "Files don't repeat 5 times each!"
-
-		for filename in unique_files:
-			x = img_files.count([filename])
-			assert x==5 , f'The file {filename} is not present 5 times in the training split. Only {x} times'		
-
-		# Now for the TEST split. Checking that the image filenames repeat 5 times in the list with the indexes used to creat the TEST subset   ##
-
-		# Create and fill img_files list with the image filenames corresponding to the indexes that have been used above for the TEST split. 
-		img_files = []
-		for i in all_indexes_shuffled[num_train_imgs*5:]:
-			img_files.append([dataset.dataframe.iloc[i,0]])
-
-		# GEt the unique values of img_files list. To do that I transfrom the list to a Dataframe and use the method unique() 
-		df_aux = pd.DataFrame(img_files)
-		unique_files =  pd.unique(df_aux[0])
-		assert len(unique_files)*5==len(all_indexes_shuffled[num_train_imgs*5:]) , "Files don't repeat 5 times each!"
-
-		for filename in unique_files:
-			x = img_files.count([filename])
-			assert x==5 , f'The file {filename} is not present 5 times in the test split. Only {x} times'		
-
-	else:
-		# Create a list with the first indexes and shuffle it
-		all_first_index = [*range(0,len(dataset),5)]
-		random.shuffle(all_first_index)
-
-		assert len(all_first_index) == len(dataset)/5, "Variable all_first_index does not containt the expected 8091 indixes"
-
-        # Calculate the number of training images from the train_percentage parameter
-		num_train_imgs = int(len(all_first_index)*train_percentage)
-
-		train_split =  Subset(dataset,all_first_index[0:num_train_imgs])
-		test_split =  Subset(dataset,all_first_index[num_train_imgs:])	
-		
-		#######   Checking if there are repeated images filenames in the TRAIN list
-		 
-		# Create and fill img_files list with the image filenames corresponding to the indexes that have been used above for the TRAIN split. 
-
-		img_files = []
-		for i in all_first_index[0:num_train_imgs]:
-			img_files.append([dataset.dataframe.iloc[i,0]])
-
-		# GEt the unique values of img_files list. To do that I transfrom the list to a Dataframe and use the method unique()
-		df_aux = pd.DataFrame(img_files)
-		unique_values_train =  pd.unique(df_aux[0])
-
-		assert len(unique_values_train)==len(all_first_index[0:num_train_imgs]) , "There are repeated image filenames in train split!"
-
-		# Now for the TEST split. Checking if there are any repeated images filenames in the TEST list
-		
-		# Create and fill img_files list with the image filenames corresponding to the indexes that have been used above for the TEST split. 
-		img_files = []
-		for i in all_first_index[num_train_imgs:]:
-			img_files.append([dataset.dataframe.iloc[i,0]])
-		
-		# GEt the unique values of img_files list. To do that I transfrom the list to a Dataframe and use the method unique()
-		df_aux = pd.DataFrame(img_files)
-		unique_values_test =  pd.unique(df_aux[0])
-
-		assert len(unique_values_test)==len(all_first_index[num_train_imgs:]) , "There are repeated image filenames in test split!"
-
-	return train_split,test_split
 
 def test_main():
 
@@ -137,10 +39,101 @@ def test_main():
 	dataset = Flickr8kDataset(dataset_folder=CONFIGURATION['DATASET_FOLDER'], transform=transform,
 								reduce=hparams['REDUCE_VOCAB'], vocab_max_size=hparams['VOCAB_SIZE'])
 
-	## Perform the split of the dataset
 	
-	train_split, test_split = split_subsets(dataset,all_captions=True)
+	## FIRST WE PERFORM THE SPLIT OF THE DATABASE USING ALL CAPTIONS AND PERFORM SOME TESTS
+	
+	train_split_all, test_split_all = split_subsets(dataset,all_captions=True)
+
+	# Checking number of indices/samples for the case of all_captions=True (using all the captions per image)
+	assert len(train_split_all)+len(test_split_all) == 40455, "The total number of samples in the datasets is different from 40.455!"
+	all_indexes = train_split_all.indices + test_split_all.indices
+	assert len(np.unique(all_indexes)) == 40455 , "The list with all the indexes of the database contain non unique indexes!!"
+
+	#######     Checking that the image filenames repeat 5 times in training split that uses the 5 captions per image   #######
+
+
+	# Create and fill img_files list with the image filenames corresponding to the indexes that have been used above for the TRAIN split. 
+	img_files = []
+	for i in train_split_all.indices:
+		img_files.append([dataset.dataframe.iloc[i,0]])
+
+	# GEt the unique values of img_files list. To do that I transfrom the list to a Numpy array and use the method unique() 
+	pd_img_files = pd.DataFrame(img_files)
+	unique_files_train =  pd.unique(pd_img_files[0])
+	assert len(unique_files_train)*5==len(train_split_all) , "The total number of samples in the trainining split is not 5 times the number of unique image filenames!"
+
+	# Let's check if every filename is present 5 times in the training split
+	for filename in unique_files_train:
+		x = img_files.count([filename])
+		assert x==5 , f'The file {filename} is not present 5 times in the training split. It appears {x} times'
+
+
+	#######     Checking that the image filenames repeat 5 times in test split that uses the 5 captions per image   #######
+
+	# Create and fill img_files list with the image filenames corresponding to the indexes that have been used above for the TEST split. 
+	img_files = []
+	for i in test_split_all.indices:
+		img_files.append([dataset.dataframe.iloc[i,0]])
+
+	# GEt the unique values of img_files list. To do that I transfrom the list to a Numpy array and use the method unique() 
+	pd_img_files = pd.DataFrame(img_files)
+	unique_files_test =  pd.unique(pd_img_files[0])
+	assert len(unique_files_test)*5==len(test_split_all) , "The total number of samples in the test split is not 5 times the number of unique image filenames!"
+
+	# Let's check if every filename is present 5 times in the test split
+	for filename in unique_files_test:
+		x = img_files.count([filename])
+		assert x==5 , f'The file {filename} is not present 5 times in the test split. It appears {x} times'
+
+	# Check that the filenames in train does not appear in the test list.
+
+	assert len(unique_files_train)+len(unique_files_test)==len(np.unique(np.concatenate((unique_files_train, unique_files_test)))) , 'One or more files in the training set is present in the test set!'
+
+	## WE NOW PERFORM THE SPLIT OF THE DATABASE USING ONE CAPTION FOR IMAGE IN TRAINING AND 5 IN TEST. WE DO THE CHECKING
+
 	train_split, test_split = split_subsets(dataset,all_captions=False)
+
+	# Checking number of indices/samples for the case of all_captions=False (using only one caption per image)
+	assert len(train_split)+len(test_split)/5 == 8091 , "The total number of samples in the datasets is different from 8091!"
+	all_indexes = train_split.indices + test_split.indices
+	assert len(np.unique(all_indexes)) ==  len(all_indexes), "The list with all the indexes of the database contain non unique indexes!!"
+
+	#######   Now we check that the image filenames repeat 1 times in training split that uses 1 caption per image   #######
+
+	# Create and fill img_files list with the image filenames corresponding to the indexes that have been used above for the TRAIN split. 
+	img_files = []
+	for i in train_split.indices:
+		img_files.append([dataset.dataframe.iloc[i,0]])
+
+	# GEt the unique values of img_files list. To do that I transfrom the list to a Numpy array and use the method unique() 
+	pd_img_files = pd.DataFrame(img_files)
+	unique_files_train =  pd.unique(pd_img_files[0])
+	assert len(unique_files_train)==len(train_split) , "All filenames in the trainining split are uniqe()"
+
+	# Let's check if every filename is present 1 times in the training split
+	for filename in unique_files_train:
+		x = img_files.count([filename])
+		assert x==1 , f'The file {filename} is not present only one time in the training split. It appears {x} times'
+
+	#######   Now we check that the image filenames repeat 5 times in test split that uses 1 caption per image   #######
+	# Create and fill img_files list with the image filenames corresponding to the indexes that have been used above for the TEST split. 
+	img_files = []
+	for i in test_split.indices:
+		img_files.append([dataset.dataframe.iloc[i,0]])
+
+	# GEt the unique values of img_files list. To do that I transfrom the list to a Dataframe and use the method unique() 
+	pd_img_files = pd.DataFrame(img_files)
+	unique_files_test =  pd.unique(pd_img_files[0])	
+	assert len(unique_files_test)*5==len(test_split) , "The total number of samples in the test split is not 5 times the number of unique image filenames!"
+
+	# Let's check if every filename is present 5 times in the test split
+	for filename in unique_files_test:
+		x = img_files.count([filename])
+		assert x==5 , f'The file {filename} is not present 5 times in the test split. It appears {x} times'
+
+	# Check that the filenames in train does not appear in the test list.
+
+	assert len(unique_files_train)+len(unique_files_test)==len(np.unique(np.concatenate((unique_files_train, unique_files_test)))) , 'One or more files in the training set is present in the test set!'
 
 if __name__ == "__main__":
 	test_main()
