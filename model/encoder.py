@@ -6,6 +6,7 @@ class Encoder_VGG16(nn.Module):
     def __init__(self):
         super(Encoder_VGG16, self).__init__()
 
+        print("Extracting feature vectors from the image")
         pretrained_model = models.vgg16(pretrained=True)
         self.conv_base = pretrained_model.features
 
@@ -59,6 +60,7 @@ class Encoder_DenseNet(nn.Module):
 
         # Flaten layer that flatten the dimensions 2 and 3 (H and W of the feature maps respectively)
         self.flat = nn.Flatten(2,3)
+
 
         # We apply here a ReLU 
         self.relu = nn.ReLU()
