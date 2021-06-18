@@ -5,3 +5,4 @@ tensorboard
 Pillow
 pandas
 nltk
+pytest

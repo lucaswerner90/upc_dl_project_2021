@@ -2,13 +2,14 @@ import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader
+
 from torchvision import transforms
 
 from dataset.main import Flickr8kDataset
 from dataset.caps_collate import CapsCollate
 from model.main import ImageCaptioningModel
-from train import train
+from train import train, split_subsets
 import json
 
 CONFIGURATION = None
@@ -16,7 +17,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 cwd = os.getcwd()
 
 with open(os.path.join(cwd, 'config.json')) as f:
-    CONFIGURATION = json.load(f)
+	CONFIGURATION = json.load(f)
 
 hparams = CONFIGURATION['HPARAMS']
 hparams['DEVICE'] = device
@@ -45,9 +46,10 @@ def main():
 		attention_dim=hparams['ATTENTION_DIM']
 	).to(hparams['DEVICE'])
 
-	train_split, test_split = random_split(
-		dataset, [32364, 8091])  # 80% train, 20% test
-
+	## Perform the split of the dataset
+	
+	train_split, test_split = split_subsets(dataset,all_captions=True)
+	
 	if (torch.cuda.is_available()):
 		torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
