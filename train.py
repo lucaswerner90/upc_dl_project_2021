@@ -44,15 +44,17 @@ def split_subsets(dataset,train_percentage=0.8,all_captions=True):
 		
 	return train_split,test_split
 
-def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device):
+def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device,scheduler):
 	"""
 	Train single epoch
 	"""
 	model.train()
 	for i, batch in enumerate(iter(train_loader)):
-		if i==0:
-			batch1 = batch
-			img, target = batch1
+#	Si volem entrenar només amb un batch
+# 		if i==0:
+#			batch1 = batch
+#			img, target = batch1
+		img, target = batch
 		img, target = img.to(device), target.to(device)
 
 		optimizer.zero_grad()
@@ -66,6 +68,11 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device)
 		torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.25)
 
 		optimizer.step()
+
+#	Aixo és per fer servir el scheduer Exponential, que s'ha de fer estep cada cop que vulguis abaixar la gamma.
+#		if (i+1)%10 == 0:
+#			scheduler.step()
+#		print(optimizer.param_groups[0]['lr'])
 
 		candidate_corpus = [model.vocab.generate_caption(torch.argmax(output[0].transpose(1, 0), dim=-1))]
 		reference_corpus = [model.vocab.generate_caption(target[0, 1:])]
@@ -107,14 +114,14 @@ def save_model(model, epoch):
 	}
 	torch.save(model_state, filename)
 
-def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, device,log_interval,vocab):
+def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, device,log_interval,vocab,scheduler):
 	"""
 	Executes model training. Saves model to a file every 5 epoch.
 	"""	
 
 	for epoch in range(1,num_epochs+1):
-		train_single_epoch(epoch, model, train_loader,optimizer, criterion, device)
-
+		train_single_epoch(epoch, model, train_loader,optimizer, criterion, device, scheduler)
+		scheduler.step()
 		if epoch % 5 == 0:
 			save_model(model, epoch)
 	
