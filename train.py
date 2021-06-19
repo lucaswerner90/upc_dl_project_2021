@@ -62,7 +62,7 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device,
 		output = model(img, target)
 		output = output.permute(1,2,0)
 		loss = criterion(output[:,:,:-1], target[:,1:])    # target[:,1:])
-#		print(i, loss.item())
+		print(i, loss.item())
 		loss.backward()
 
 		torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.25)
