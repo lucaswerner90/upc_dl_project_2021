@@ -50,6 +50,7 @@ def main():
 	
 	train_split, test_split = split_subsets(dataset,all_captions=True)
 	
+#   Aquesta línia em provocava errors quan corria el codi desde GPU
 	if (torch.cuda.is_available()):
 		torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
@@ -59,14 +60,13 @@ def main():
 		pad_idx=dataset.vocab.word_to_index['<PAD>'], batch_first=True))
 
 	optimizer = optim.Adam(model.parameters(), lr=hparams['LEARNING_RATE'])
-#	optimizer = optim.Adam(model.parameters(), lr=0.1)
 
 	criterion = nn.CrossEntropyLoss(
 		ignore_index=dataset.vocab.word_to_index['<PAD>'])
 
-#	scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
+	scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 #	scheduler = optim.lr_scheduler.StepLR
-	scheduler = None
+#	scheduler = None
 #	print(optimizer.param_groups[0]['lr'])
 
 	train(

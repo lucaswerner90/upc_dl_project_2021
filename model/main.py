@@ -102,7 +102,7 @@ class ImageCaptioningModel(nn.Module):
 		pos_embeddings = pos_embeddings.permute(1,0,2)
 
 		## La dimensió de pos-embeddings hauria de ser  Seq_len,batch,embed_size
-		x = self.decoder(pos_embeddings,images_features)
+		x = self.decoder(pos_embeddings,images_features,tgt_mask=self.tgt_mask)
 		x = self.linear(x)
 
 		return x
