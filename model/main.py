@@ -5,17 +5,24 @@ from model.attention import Attention
 #from encoder import Encoder
 from model.encoder import Encoder_VGG16
 from model.decoder import Decoder
+from model.transformer.decoder import TransformerDecoder
 from dataset.vocabulary import Vocabulary
 
 class ImageCaptioningModel(nn.Module):
-	def __init__(self, image_features_dim:int,embed_size:int, vocab:Vocabulary, caption_max_length:int,attention_dim):
+	def __init__(self, image_features_dim:int,embed_size:int, vocab:Vocabulary, caption_max_length:int,decoder_num_layers=8):
 		super(ImageCaptioningModel, self).__init__()
 		self.vocab = vocab
 		self.vocab_size = len(self.vocab.word_to_index)
 		self.encoder = Encoder_VGG16()
-		self.attention = Attention(image_features_dim=image_features_dim, decoder_hidden_state_dim=embed_size, attention_dim=attention_dim)
-		self.decoder = Decoder(image_features_dim=image_features_dim,vocab_size=self.vocab_size,hidden_size=embed_size,embed_size=embed_size)
+		self.decoder = TransformerDecoder(image_features_dim=image_features_dim,vocab_size=self.vocab_size,embed_size=embed_size,num_layers=decoder_num_layers)
 		self.caption_max_length = caption_max_length
+
+		self.init_weights()
+
+	def init_weights(self):
+		for p in self.decoder.parameters():
+			if p.dim()>1:
+				nn.init.xavier_uniform_(p)
 	
 	def forward(self, images, captions, initial_hidden=None):
 		"""
@@ -25,18 +32,9 @@ class ImageCaptioningModel(nn.Module):
 		"""
 
 		images_features = self.encoder(images)
-		bsz, *_ = images_features.shape
-		hidden = self.decoder.init_hidden(images.shape[0]) if initial_hidden == None else initial_hidden
-		timesteps = captions.shape[-1]-1
-		attention_weights = []
-		predictions = torch.zeros(size=(timesteps,bsz,self.vocab_size))
-		for i in range(timesteps):
-			alphas, weighted_features = self.attention.forward(images_features, hidden)
-			words = captions[:,i:i+1]
-			predictions_t, hidden = self.decoder.forward(weighted_features, words, hidden)
-			predictions[i] = predictions_t
-			attention_weights.append(alphas)
-		return predictions.permute(1,2,0), attention_weights
+		predictions = self.decoder.forward(images_features, captions)
+
+		return predictions
 	
 	def inference(self, image):
 		image_features = self.encoder(image)

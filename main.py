@@ -42,8 +42,7 @@ def main():
 		image_features_dim=hparams['IMAGE_FEATURES_DIM'],
 		embed_size=hparams['EMBED_SIZE'],
 		vocab = dataset.vocab,
-		caption_max_length=hparams['MAX_LENGTH'],
-		attention_dim=hparams['ATTENTION_DIM']
+		caption_max_length=hparams['MAX_LENGTH']
 	).to(hparams['DEVICE'])
 
 	## Perform the split of the dataset

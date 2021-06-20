@@ -1,6 +1,7 @@
 import torch
 import os
 from model.visualization import Visualization
+from einops.einops import rearrange
 from panel.main import tensorboard_panel
 from torch.utils.data.dataset import Subset
 import random
@@ -59,7 +60,14 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device)
 
 		optimizer.zero_grad()
 
-		output, _ = model(img, target)
+		output = model(img, target)
+		output = rearrange(
+			output,
+			'bsz seq_len vocab_size -> bsz vocab_size seq_len',
+			bsz=target.shape[0],
+			seq_len=target.shape[1]-1
+		)
+
 		loss = criterion(output, target[:,1:])
 		loss.backward()
 
@@ -73,34 +81,14 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device)
 		# bleu = bleu_score(candidate_corpus, reference_corpus)
 		write_on_tensorboard(i+(epoch*len(train_loader)),loss.item(),bleu,img[0],reference_corpus,candidate_corpus)
 
-def evaluate(model,test_loader, vocab, device,criterion):
-	model.eval()
 
-	total_loss = 0.
-	#device= 'cpu'
-	with torch.no_grad():
-		for idx, batch in enumerate(iter(test_loader)):
-			img, target = batch
-			img = img.to(device)
-			target = target.to(device)
-			for i in range(img.shape[0]):
-				sentence = model.inference(image=img[i].unsqueeze(0),vocab=vocab)
-				alphas = model.forward(image=img[i].unsqueeze(0), vocab=vocab)[1]
-			
-
-			caption = ' '.join(sentence)
-			Visualization.plot_attention((img[0]), sentence, alphas) # showing expected and plotting attention
-			total_loss += target.numel()*criterion(sentence,target).item()
-			n += target.numel()
-
-		return total_loss / n, caption
 
 
 def save_model(model, epoch):
 	"""
 	Function to save current model
 	"""
-	filename = os.path.join('model','checkpoints','Epoch_'+str(epoch)+'_model_state.pth')
+	filename = os.path.join('model','checkpoints','Tr_Epoch_'+str(epoch)+'_model_state.pth')
 	model_state = {
 		'epoch':epoch,
 		'model':model.state_dict()
