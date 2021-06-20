@@ -43,8 +43,11 @@ class TransformerDecoder(nn.Module):
     def forward(self, image_features: Tensor, captions: Tensor):
 
         embeddings = self.embed(captions) * math.sqrt(self.embedding_size)
-        
-        image_features = self.reduce_features(image_features.flatten(1,2))
+        image_features = rearrange(
+            image_features,
+            'bsz num_filters embed_size -> embed_size bsz num_filters'
+        )
+        image_features = self.reduce_features(image_features)
         embeddings = rearrange(
             embeddings,
             'bsz seq_len embed_size -> seq_len bsz embed_size'
@@ -56,9 +59,9 @@ class TransformerDecoder(nn.Module):
             memory=image_features,
             tgt_mask=self.generate_square_subsequent_mask(len(positional_embeddings))
         )
-        outputs = rearrange(
-            outputs, 
-            'seq_len bsz embed_size -> bsz seq_len embed_size'
-        )
+        #outputs = rearrange(
+        #    outputs, 
+        #    'seq_len bsz embed_size -> bsz seq_len embed_size'
+        #)
         y = self.linear(outputs)
         return y

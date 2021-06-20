@@ -60,10 +60,10 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device)
 
 		optimizer.zero_grad()
 
-		output = model(img, target)
+		output = model(img, target[:,:-1])
 		output = rearrange(
 			output,
-			'bsz seq_len vocab_size -> bsz vocab_size seq_len',
+			'seq_len bsz vocab_size -> bsz vocab_size seq_len',
 			bsz=target.shape[0],
 			seq_len=target.shape[1]-1
 		)
