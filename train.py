@@ -69,10 +69,6 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device,
 
 		optimizer.step()
 
-#	Aixo és per fer servir el scheduer Exponential, que s'ha de fer estep cada cop que vulguis abaixar la gamma.
-#		if (i+1)%10 == 0:
-#			scheduler.step()
-#		print(optimizer.param_groups[0]['lr'])
 
 		candidate_corpus = [model.vocab.generate_caption(torch.argmax(output[0].transpose(1, 0), dim=-1))]
 		reference_corpus = [model.vocab.generate_caption(target[0, 1:])]
@@ -122,6 +118,8 @@ def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, dev
 	for epoch in range(1,num_epochs+1):
 		train_single_epoch(epoch, model, train_loader,optimizer, criterion, device, scheduler)
 		scheduler.step()
+#		print("Epoch= ",epoch,". LR=",optimizer.param_groups[0]['lr'])
+
 		if epoch % 5 == 0:
 			save_model(model, epoch)
 	

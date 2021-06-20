@@ -64,7 +64,7 @@ def main():
 	criterion = nn.CrossEntropyLoss(
 		ignore_index=dataset.vocab.word_to_index['<PAD>'])
 
-	scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.95)
+	scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.97)
 #	scheduler = optim.lr_scheduler.StepLR
 #	scheduler = None
 #	print(optimizer.param_groups[0]['lr'])

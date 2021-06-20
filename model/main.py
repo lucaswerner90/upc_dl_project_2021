@@ -57,6 +57,8 @@ class ImageCaptioningModel(nn.Module):
 		self.decoder = nn.TransformerDecoder(decoderlayers,num_layers=4)
 		self.caption_max_length = caption_max_length
 		self.linear = nn.Linear(embed_size,self.vocab_size)
+
+		self.init_weights()
 	
 
 	## Me l'he d emirar aquest subsequent mask ##
@@ -65,12 +67,10 @@ class ImageCaptioningModel(nn.Module):
 		mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
 		return mask
 
-## M'ho he de mirar també
 	def init_weights(self):
-		initrange = 0.1
-		self.encoder.weight.data.uniform_(-initrange, initrange)
-		self.decoder.bias.data.zero_()
-		self.decoder.weight.data.uniform_(-initrange, initrange)
+		for p in self.decoder.parameters():
+			if p.dim() > 1:
+				nn.init.xavier_uniform_(p)
 
 
 	def forward(self, images, captions, has_mask=True):
@@ -120,7 +120,7 @@ class ImageCaptioningModel(nn.Module):
 #			predictions_t, hidden = self.decoder.forward(weighted_features, words, hidden)
 #			predictions[i] = predictions_t
 #			attention_weights.append(alphas)
-		return predictions.permute(1,2,0), attention_weights
+#		return predictions.permute(1,2,0), attention_weights
 	
 	def inference(self, image):
 		image_features = self.encoder(image)
