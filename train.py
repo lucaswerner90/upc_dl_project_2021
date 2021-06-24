@@ -61,20 +61,28 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device,
 
 		output = model(img, target)
 		output = output.permute(1,2,0)
-		loss = criterion(output[:,:,:-1], target[:,1:])    # target[:,1:])
+		loss = criterion(output[:,:,:-1], target[:,1:])
+
 #		print(i, loss.item())
+		print('--------------------------------------------------------------------------------------------------')
+		print(f'Loss: {loss.item()}')
+
 		loss.backward()
 
 		torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.25)
 
 		optimizer.step()
 
-
 		candidate_corpus = [model.vocab.generate_caption(torch.argmax(output[0].transpose(1, 0), dim=-1))]
 		reference_corpus = [model.vocab.generate_caption(target[0, 1:])]
+		print('--------------------------------------------------------------------------------------------------')
+		print(candidate_corpus)
+		print(reference_corpus)
+		print('--------------------------------------------------------------------------------------------------')
+		
 		bleu = 0
 		# bleu = bleu_score(candidate_corpus, reference_corpus)
-		write_on_tensorboard(i+(epoch*len(train_loader)),loss.item(),bleu,img[0],reference_corpus,candidate_corpus)
+#		write_on_tensorboard(i+(epoch*len(train_loader)),loss.item(),bleu,img[0],reference_corpus,candidate_corpus)
 
 def evaluate(model,test_loader, vocab, device,criterion):
 	model.eval()
