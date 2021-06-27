@@ -52,12 +52,12 @@ def train_single_batch(model,batch,optimizer,criterion,device):
 	img, target = img.to(device), target.to(device)
 
 	optimizer.zero_grad()
-	output = model(img, target)
+	output = model(img, target[...,:-1])
 	output = rearrange(
 		output,
 		'bsz seq_len vocab_size -> bsz vocab_size seq_len'
 	)
-	loss = criterion(output[...,:-1], target[...,1:])
+	loss = criterion(output, target[...,1:])
 	print('--------------------------------------------------------------------------------------------------')
 	print(f'Loss: {loss.item()}')
 	
@@ -105,7 +105,7 @@ def train(num_epochs, model, train_loader, optimizer, criterion, device):
 	"""
 	Executes model training. Saves model to a file every 5 epoch.
 	"""	
-	single_batch=False
+	single_batch=True
 	model.train()
 	scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1.0, gamma=0.95)
 	batch=next(iter(train_loader))

@@ -7,7 +7,7 @@ from torch import nn
 from model.transformer.positional_encoding import PositionalEncoding
 
 class TransformerDecoder(nn.Module):
-    def __init__(self, image_features_dim, vocab_size, embed_size, num_layers=4):
+    def __init__(self, image_features_dim, vocab_size, embed_size, num_layers):
         super(TransformerDecoder, self).__init__()
         self.num_layers = num_layers
         self.vocab_size = vocab_size
