@@ -17,7 +17,7 @@ class Visualization:
         img[1] += 0.456
         img[2] += 0.406
 
-        return img.numpy().transpose((1, 2, 0))
+        return img.cpu().numpy().transpose((1, 2, 0))
 
     def show_image(img, title=None,fn='plot.png'):
         """Imshow for Tensor."""

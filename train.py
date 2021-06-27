@@ -3,12 +3,14 @@ import torch
 import os
 from panel.main import tensorboard_panel
 from torch.utils.data.dataset import Subset
+from evaluate import evaluate
 import random
 import numpy as np
 
 def write_on_tensorboard(epoch:int, loss:int, image, expected_captions, generated_captions):
-	tensorboard_panel.add_sentences_comparison(epoch,expected_captions[0],generated_captions[0])
+	tensorboard_panel.add_sentences_comparison(epoch,expected_captions,generated_captions)
 	tensorboard_panel.add_loss(epoch,loss)
+	tensorboard_panel.add_image(epoch,image,expected_captions,generated_captions)
 
 def split_subsets(dataset,train_percentage=0.8,all_captions=True):
 	"""
@@ -86,22 +88,20 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device)
 			output,
 			'bsz seq_len vocab_size -> bsz vocab_size seq_len'
 		)
-		loss = criterion(output[...,:-1], target[...,1:])
+		loss = criterion(output[:,:,:-1], target[:,1:])
 		print('--------------------------------------------------------------------------------------------------')
 		print(f'Epoch {epoch} batch: {i}/{len(train_loader)} loss: {loss.item()}')
 		
 		loss.backward()
-		torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.25, error_if_nonfinite=True)
+		torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.25)
 		optimizer.step()
 
 		candidate_corpus = model.vocab.generate_caption(torch.argmax(output[0,...,1:].transpose(1, 0), dim=-1))
 		reference_corpus = model.vocab.generate_caption(target[0, 1:])
-		print('--------------------------------------------------------------------------------------------------')
-		print(candidate_corpus)
-		print(reference_corpus)
-		print('--------------------------------------------------------------------------------------------------')
+		
+		write_on_tensorboard(i+(epoch*len(train_loader)),loss.item(),img[0],reference_corpus,candidate_corpus)
 
-def train(num_epochs, model, train_loader, optimizer, criterion, device):
+def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, device):
 	"""
 	Executes model training. Saves model to a file every 5 epoch.
 	"""	
@@ -118,4 +118,6 @@ def train(num_epochs, model, train_loader, optimizer, criterion, device):
 			print(f'Scheduler: {scheduler.get_last_lr()[0]} ')
 			if epoch % 5 == 0:
 				model.save_model(model, epoch)
+			val_loss = evaluate(model=model,test_loader=test_loader,device=device,epoch=epoch)
+
 	
