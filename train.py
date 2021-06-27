@@ -88,7 +88,7 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device)
 		)
 		loss = criterion(output[...,:-1], target[...,1:])
 		print('--------------------------------------------------------------------------------------------------')
-		print(f'Epoch {epoch} batch: {i} loss: {loss.item()}')
+		print(f'Epoch {epoch} batch: {i}/{len(train_loader)} loss: {loss.item()}')
 		
 		loss.backward()
 		torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.25, error_if_nonfinite=True)

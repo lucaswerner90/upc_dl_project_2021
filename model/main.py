@@ -24,7 +24,22 @@ class ImageCaptioningModel(nn.Module):
 		images_features = self.encoder.forward(images)
 		predictions = self.decoder.forward(images_features, captions)
 		return predictions
-	
+	def generate(self,image):
+		image_features = self.encoder.forward(image)
+		if torch.cuda.is_available():
+			word = torch.cuda.IntTensor([self.vocab.word_to_index['<START>']])
+		else:
+			word = torch.tensor(self.vocab.word_to_index['<START>'])
+		sentence = [word.item()]
+		
+		for i in range(self.caption_max_length):
+			next_word=self.decoder.forward(image_features,sentence)[-1].argmax(-1)
+			if next_word.item() == self.vocab.word_to_index['<END>']:
+				break 
+			sentence = torch.cat([sentence,next_word.unsqueeze(0)],dim=0)
+		return self.vocab.generate_caption(sentence)
+			
+		
 	def inference(self, image):
 		image_features = self.encoder(image)
 		hidden = self.decoder.init_hidden(image.shape[0])
