@@ -3,7 +3,7 @@ from torch import nn
 from model.attention import Attention
 
 #from encoder import Encoder
-from model.encoder import Encoder_VGG16
+from model.encoder import Encoder_VGG16,Encoder_ViT_Pretrained
 from model.decoder import Decoder
 from dataset.vocabulary import Vocabulary
 import math
@@ -37,6 +37,9 @@ class PositionalEncoding(nn.Module):
 
 		x = x + self.pe[:x.size(0), :]
 		return self.dropout(x)
+
+
+
 
 
 class ImageCaptioningModel(nn.Module):
@@ -107,6 +110,85 @@ class ImageCaptioningModel(nn.Module):
 
 		return x
 
+
+
+
+class ViTImageCaptioningModel(nn.Module):
+	def __init__(self, image_features_dim:int,embed_size:int, vocab:Vocabulary, caption_max_length:int,attention_dim):
+		super(ViTImageCaptioningModel, self).__init__()
+		self.embed_size = embed_size
+		self.vocab = vocab
+		self.vocab_size = len(self.vocab.word_to_index)
+		self.encoder = Encoder_ViT_Pretrained()
+##  Si volem que el Encoder ens tregui les attentions i tots els hidden states, podem canviar el confif del ViTencoder
+#     ViTEncoder.config
+
+# per saber la dimensió de les features: self.encoder.pretrained_model.encoder.config.hidden_size
+# per saber el número de patches o vectors.... no sé... és 1+(14x14) El 14 surt de 224/16
+# La mida dels patches:  self.encoder.pretrained_model.encoder.config.patch_size
+# La mida de la imatge:  self.encoder.pretrained_model.encoder.config.image_size
+
+		print("Encoder initialized correctly")
+		self.adap_encoder = nn.Linear(self.encoder.pretrained_model.encoder.config.hidden_size,embed_size)
+
+		self.embed_layer = nn.Embedding(self.vocab_size, embed_size)
+		
+		self.tgt_mask = None    ## OJU!!
+		self.pos_encoder = PositionalEncoding(embed_size, dropout=0.1)
+
+		decoderlayers = nn.TransformerDecoderLayer(embed_size,nhead=4,dropout=0.1)
+		self.decoder = nn.TransformerDecoder(decoderlayers,num_layers=4)
+		self.caption_max_length = caption_max_length
+		self.linear = nn.Linear(embed_size,self.vocab_size)
+
+		self.init_weights()
+	
+
+	## Me l'he d emirar aquest subsequent mask ##
+	def _generate_square_subsequent_mask(self, sz):
+		mask = (torch.triu(torch.ones(sz, sz)) == 1).transpose(0, 1)  # Lower triangular matrix with ones.
+		mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
+		return mask
+
+	def init_weights(self):
+		for p in self.decoder.parameters():
+			if p.dim() > 1:
+				nn.init.xavier_uniform_(p)
+
+
+	def forward(self, images, captions, has_mask=True):
+		"""
+		images => (batch_size, channels, W, H)
+		captions => (batch_size, captions_length)
+		initial_hidden => (seq_len = 1, bsz_size, captions_length)
+		"""
+		tgt_seq_len = captions.shape[1]    #  aquí hi vull posar la longitud de la seqüencia. No sé si està bé.  Es podria utilitzar el len(captions)
+		# No tinc om
+		if has_mask:
+			device = images.device
+			if self.tgt_mask is None or self.tgt_mask.size(0) != tgt_seq_len:
+				mask = self._generate_square_subsequent_mask(tgt_seq_len).to(device)    #  Es podria utilitzar el len(captions)
+				self.tgt_mask = mask
+		else:
+			self.tgt_mask = None
+
+
+		images_features = self.encoder(images)
+		bsz, *_ = images_features.shape
+		images_features = images_features.permute(2,0,1)
+
+		images_features = self.adap_encoder(images_features)
+
+		embeddings = self.embed_layer(captions)
+		embeddings = embeddings * math.sqrt(self.embed_size)
+		pos_embeddings = self.pos_encoder(embeddings)
+		pos_embeddings = pos_embeddings.permute(1,0,2)
+
+		## La dimensió de pos-embeddings hauria de ser  Seq_len,batch,embed_size
+		x = self.decoder(pos_embeddings,images_features,tgt_mask=self.tgt_mask)
+		x = self.linear(x)
+
+		return x
 
 #
 # 		hidden = self.decoder.init_hidden(images.shape[0]) if initial_hidden == None else initial_hidden

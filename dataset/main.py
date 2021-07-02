@@ -15,8 +15,9 @@ class Flickr8kDataset(Dataset):
     Dataset for Flickr8k data treatment
     """
 
-    def __init__(self, dataset_folder,transform=None,reduce=False,vocab_max_size=5000):
+    def __init__(self, dataset_folder,transform=None,reduce=False,vocab_max_size=5000,feature_extractor=None):
         super(Flickr8kDataset, self).__init__()
+        self.feature_extractor = feature_extractor
         self.transform = transform
         self.images_folder = os.path.join(dataset_folder,'Images')
         self.dataframe = pd.read_csv(open(os.path.join(dataset_folder,'captions.txt'),'r'))
@@ -24,7 +25,7 @@ class Flickr8kDataset(Dataset):
         self.caption = self.dataframe['caption']
         self.vocab = Vocabulary()
         self.vocab.build_vocabulary(self.caption.tolist(),reduce,vocab_max_size)
-        
+
 
     def read_image(self,filename:str) -> Image:
         """
@@ -60,6 +61,8 @@ class Flickr8kDataset(Dataset):
 
         if self.transform:
             image = self.transform(image)
+        if self.feature_extractor:
+            image = self.feature_extractor(images=image, return_tensors="pt").data['pixel_values'].squeeze()
 
         tok_vec = []
         tok_vec += [self.vocab.word_to_index['<START>']]

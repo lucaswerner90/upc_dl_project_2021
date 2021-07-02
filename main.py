@@ -8,9 +8,10 @@ from torchvision import transforms
 
 from dataset.main import Flickr8kDataset
 from dataset.caps_collate import CapsCollate
-from model.main import ImageCaptioningModel
+from model.main import ImageCaptioningModel,ViTImageCaptioningModel
 from train import train, split_subsets
 import json
+import pickle
 
 CONFIGURATION = None
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -22,29 +23,46 @@ with open(os.path.join(cwd, 'config.json')) as f:
 hparams = CONFIGURATION['HPARAMS']
 hparams['DEVICE'] = device
 
+use_ViT_Enc = True
+
 def main():
 
-	transform = transforms.Compose([
-		transforms.ToTensor(),
-		transforms.Resize((hparams['IMAGE_SIZE'],hparams['IMAGE_SIZE'])),
-		# The normalize parameters depends on the model we're gonna use
-		# If we apply transfer learning from a model that used ImageNet, then
-		# we should use the ImageNet values to normalize the dataset.
-		# Otherwise we could just normalize the values between -1 and 1 using the 
-		# standard mean and standard deviation
-		transforms.Normalize(mean=hparams['IMAGE_NET_MEANS'],std=hparams['IMAGE_NET_STDS']),
-	])
-	dataset = Flickr8kDataset(dataset_folder=CONFIGURATION['DATASET_FOLDER'], transform=transform,
-								reduce=hparams['REDUCE_VOCAB'], vocab_max_size=hparams['VOCAB_SIZE'])
+	if use_ViT_Enc:
+		transform = None
+		with open("feature_extractor.pickle", "rb") as f:
+			feature_extractor = pickle.load(f)  
+	else:
+		feature_extractor = None
+		transform = transforms.Compose([
+			transforms.ToTensor(),
+			transforms.Resize((hparams['IMAGE_SIZE'],hparams['IMAGE_SIZE'])),
+			# The normalize parameters depends on the model we're gonna use
+			# If we apply transfer learning from a model that used ImageNet, then
+			# we should use the ImageNet values to normalize the dataset.
+			# Otherwise we could just normalize the values between -1 and 1 using the 
+			# standard mean and standard deviation
+			transforms.Normalize(mean=hparams['IMAGE_NET_MEANS'],std=hparams['IMAGE_NET_STDS']),
+		])
 
-    # Test the dataloader
-	model = ImageCaptioningModel(
-		image_features_dim=hparams['IMAGE_FEATURES_DIM'],
-		embed_size=hparams['EMBED_SIZE'],
-		vocab = dataset.vocab,
-		caption_max_length=hparams['MAX_LENGTH'],
-		attention_dim=hparams['ATTENTION_DIM']
-	).to(hparams['DEVICE'])
+	dataset = Flickr8kDataset(dataset_folder=CONFIGURATION['DATASET_FOLDER'], transform=transform,
+								reduce=hparams['REDUCE_VOCAB'], vocab_max_size=hparams['VOCAB_SIZE'],feature_extractor=feature_extractor)
+
+	if use_ViT_Enc:
+		model = ViTImageCaptioningModel(
+			image_features_dim=hparams['IMAGE_FEATURES_DIM'],
+			embed_size=hparams['EMBED_SIZE'],
+			vocab = dataset.vocab,
+			caption_max_length=hparams['MAX_LENGTH'],
+			attention_dim=hparams['ATTENTION_DIM']
+		).to(hparams['DEVICE'])
+	else:
+		model = ImageCaptioningModel(
+			image_features_dim=hparams['IMAGE_FEATURES_DIM'],
+			embed_size=hparams['EMBED_SIZE'],
+			vocab = dataset.vocab,
+			caption_max_length=hparams['MAX_LENGTH'],
+			attention_dim=hparams['ATTENTION_DIM']
+		).to(hparams['DEVICE'])
 
 	## Perform the split of the dataset
 	
