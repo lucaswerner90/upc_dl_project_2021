@@ -129,6 +129,7 @@ class ViTImageCaptioningModel(nn.Module):
 # La mida de la imatge:  self.encoder.pretrained_model.encoder.config.image_size
 
 		print("Encoder initialized correctly")
+
 		self.adap_encoder = nn.Linear(self.encoder.pretrained_model.encoder.config.hidden_size,embed_size)
 
 		self.embed_layer = nn.Embedding(self.vocab_size, embed_size)

@@ -12,6 +12,7 @@ from model.main import ImageCaptioningModel,ViTImageCaptioningModel
 from train import train, split_subsets
 import json
 import pickle
+from torch.utils.data.dataset import Subset
 
 CONFIGURATION = None
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -28,9 +29,12 @@ use_ViT_Enc = True
 def main():
 
 	if use_ViT_Enc:
+		print("It is using ViT encoder!!!!")
 		transform = None
 		with open("feature_extractor.pickle", "rb") as f:
 			feature_extractor = pickle.load(f)  
+#			feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224-in21k')
+
 	else:
 		feature_extractor = None
 		transform = transforms.Compose([
@@ -86,6 +90,17 @@ def main():
 #	scheduler = optim.lr_scheduler.StepLR
 #	scheduler = None
 #	print(optimizer.param_groups[0]['lr'])
+
+
+#	Si volem entrenar només amb un batch
+	one_batch = True
+
+	if one_batch==True:
+		print("Only uses one batch for training!!!!!")
+		list = [*range(0,30,5)]
+		train_split =  Subset(dataset,list)
+		train_loader = DataLoader(train_split, shuffle=True, batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(
+		pad_idx=dataset.vocab.word_to_index['<PAD>'], batch_first=True))	
 
 	train(
 		num_epochs=hparams['NUM_EPOCHS'],

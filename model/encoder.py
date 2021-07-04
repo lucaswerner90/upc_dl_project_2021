@@ -86,10 +86,9 @@ class Encoder_ViT_Pretrained(nn.Module):
 
         with open("model.pickle", "rb") as f:
             self.pretrained_model = pickle.load(f)
-
-        print(self.pretrained_model)
-#        self.feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224-in21k')
 #        self.pretrained_model = ViTModel.from_pretrained('google/vit-base-patch16-224-in21k')
+
+#        print(self.pretrained_model)
 
         # Freeze All layers as they will be used for inference
         for param in self.pretrained_model.parameters():  

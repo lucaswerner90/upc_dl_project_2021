@@ -6,3 +6,4 @@ Pillow
 pandas
 nltk
 pytest
+transformers

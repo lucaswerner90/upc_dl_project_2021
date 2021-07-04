@@ -50,10 +50,7 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device,
 	"""
 	model.train()
 	for i, batch in enumerate(iter(train_loader)):
-#	Si volem entrenar només amb un batch
-# 		if i==0:
-#			batch1 = batch
-#			img, target = batch1
+
 		img, target = batch
 		img, target = img.to(device), target.to(device)
 
@@ -65,7 +62,7 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device,
 
 #		print(i, loss.item())
 		print('--------------------------------------------------------------------------------------------------')
-		print(f'Loss: {loss.item()}')
+		print(f'Epoch:  {epoch}. Batch: {i}. Loss: {loss.item()}')
 
 		loss.backward()
 
@@ -111,6 +108,11 @@ def save_model(model, epoch):
 	"""
 	Function to save current model
 	"""
+
+	dirname = os.path.join('model','checkpoints')
+	if os.path.isdir(dirname) == False:
+		os.mkdir(dirname)
+
 	filename = os.path.join('model','checkpoints','Epoch_'+str(epoch)+'_model_state.pth')
 	model_state = {
 		'epoch':epoch,
