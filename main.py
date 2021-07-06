@@ -48,13 +48,9 @@ def main():
 	## Perform the split of the dataset
 	
 	train_split, test_split = split_subsets(dataset,all_captions=True)
-	
 
 	train_loader = DataLoader(train_split, shuffle=True, batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(
 		pad_idx=dataset.vocab.word_to_index['<PAD>'], batch_first=True))
-	test_loader = DataLoader(test_split, shuffle=True, batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(
-		pad_idx=dataset.vocab.word_to_index['<PAD>'], batch_first=True))
-
 	test_loader = DataLoader(test_split, shuffle=True, batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(
 		pad_idx=dataset.vocab.word_to_index['<PAD>'], batch_first=True))
 

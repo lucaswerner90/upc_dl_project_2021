@@ -18,7 +18,8 @@ class TransformerDecoder(nn.Module):
 
         self.transformer_decoder_layer = nn.TransformerDecoderLayer(
             d_model=self.embedding_size,
-            nhead=4
+            nhead=4,
+            dropout=0.1
         )
         self.transformer_decoder = nn.TransformerDecoder(
             self.transformer_decoder_layer,
