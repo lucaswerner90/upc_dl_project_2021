@@ -5,7 +5,9 @@ from model.visualization import Visualization
 import matplotlib.pyplot as plt
 
 class Tensorboard:
-	writer = SummaryWriter('runs/ImageCaptioning')
+	def __init__(self,directory:str='runs/ImageCaptioning') -> None:
+		self.writer = SummaryWriter(directory)
+	#writer = SummaryWriter('runs/ImageCaptioning')
 
 	def add_sentences_comparison(self,epoch:int,expected:str,generated:str):
 		self.writer.add_text('Expected/Generated', f'Expected: {expected} \n\n Generated:{generated}', epoch)
@@ -27,3 +29,4 @@ class Tensorboard:
 
 
 tensorboard_panel = Tensorboard()
+tensorboard_panel_eval = Tensorboard('runs/ImageCaptioningEvaluate')

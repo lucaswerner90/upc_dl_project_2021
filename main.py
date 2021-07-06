@@ -48,9 +48,6 @@ def main():
 	## Perform the split of the dataset
 	
 	train_split, test_split = split_subsets(dataset,all_captions=True)
-	
-	if (torch.cuda.is_available()):
-		torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
 	train_loader = DataLoader(train_split, shuffle=True, batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(
 		pad_idx=dataset.vocab.word_to_index['<PAD>'], batch_first=True))

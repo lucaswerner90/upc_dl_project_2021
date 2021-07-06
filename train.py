@@ -3,7 +3,7 @@ import torch
 import os
 from panel.main import tensorboard_panel
 from torch.utils.data.dataset import Subset
-from evaluate import evaluate
+from evaluate import evaluate, evaluate_tr
 import random
 import numpy as np
 
@@ -83,22 +83,23 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device)
 		img, target = img.to(device), target.to(device)
 
 		optimizer.zero_grad()
-		output = model(img, target)
+		output = model(img, target[:,:-1])
 		output = rearrange(
 			output,
 			'bsz seq_len vocab_size -> bsz vocab_size seq_len'
 		)
-		loss = criterion(output[:,:,:-1], target[:,1:])
-		print('--------------------------------------------------------------------------------------------------')
-		print(f'Epoch {epoch} batch: {i}/{len(train_loader)} loss: {loss.item()}')
-		
+		loss = criterion(output, target[:,1:])
+		if i % 100 == 0:
+			print('--------------------------------------------------------------------------------------------------')
+			print(f'Epoch {epoch} batch: {i}/{len(train_loader)} loss: {loss.item()}')
+
 		loss.backward()
 		torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.25)
 		optimizer.step()
 
 		candidate_corpus = model.vocab.generate_caption(torch.argmax(output[0,...,1:].transpose(1, 0), dim=-1))
 		reference_corpus = model.vocab.generate_caption(target[0, 1:])
-		
+				
 		write_on_tensorboard(i+(epoch*len(train_loader)),loss.item(),img[0],reference_corpus,candidate_corpus)
 
 def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, device):
@@ -117,7 +118,7 @@ def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, dev
 			scheduler.step()
 			print(f'Scheduler: {scheduler.get_last_lr()[0]} ')
 			if epoch % 5 == 0:
-				model.save_model(model, epoch)
-			val_loss = evaluate(model=model,test_loader=test_loader,device=device,epoch=epoch)
+				model.save_model(epoch)
+			val_loss = evaluate_tr(model=model,test_loader=test_loader,device=device,epoch=epoch)
 
 	
