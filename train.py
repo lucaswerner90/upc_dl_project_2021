@@ -54,12 +54,13 @@ def train_single_batch(model,batch,optimizer,criterion,device):
 	img, target = img.to(device), target.to(device)
 
 	optimizer.zero_grad()
-	output = model(img, target)
+	target[target==2]=0
+	output = model(img,  target[:,:-1])
 	output = rearrange(
 		output,
 		'bsz seq_len vocab_size -> bsz vocab_size seq_len'
 	)
-	loss = criterion(output[...,:-1], target[...,1:])
+	loss = criterion(output, target[...,1:])
 	print('--------------------------------------------------------------------------------------------------')
 	print(f'Loss: {loss.item()}')
 	
@@ -83,14 +84,14 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device)
 		img, target = img.to(device), target.to(device)
 
 		optimizer.zero_grad()
-		target_loss=target
+		#target_loss=target
 		target[target==2]=0
 		output = model(img, target[:,:-1])
 		output = rearrange(
 			output,
 			'bsz seq_len vocab_size -> bsz vocab_size seq_len'
 		)
-		loss = criterion(output, target_loss[:,1:])
+		loss = criterion(output, target[:,1:])
 		if i % 100 == 0:
 			print('--------------------------------------------------------------------------------------------------')
 			print(f'Epoch {epoch} batch: {i}/{len(train_loader)} loss: {loss.item()}')
@@ -108,19 +109,22 @@ def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, dev
 	"""
 	Executes model training. Saves model to a file every 5 epoch.
 	"""	
-	single_batch=False
+	single_batch=True
 	model.train()
 	scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1.0, gamma=0.95)
 	batch=next(iter(train_loader))
 	for epoch in range(1,num_epochs+1):
 		if single_batch:
 			train_single_batch(model, batch,optimizer, criterion, device)
+			if epoch % 100 == 0:
+				val_loss = evaluate_tr(model=model,test_loader=test_loader,device=device,epoch=epoch, criterion=criterion)
+			
 		else:
 			train_single_epoch(epoch, model, train_loader,optimizer, criterion, device)
 			scheduler.step()
 			print(f'Scheduler: {scheduler.get_last_lr()[0]} ')
 			if epoch % 5 == 0:
 				model.save_model(epoch)
-			val_loss = evaluate_tr(model=model,test_loader=test_loader,device=device,epoch=epoch, criterion=criterion)
+			val_loss = evaluate_tr(model=model,test_loader=train_loader,device=device,epoch=epoch, criterion=criterion)
 
 	
