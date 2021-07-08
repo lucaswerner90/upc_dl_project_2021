@@ -3,11 +3,12 @@ import random
 from panel.main import tensorboard_panel_eval
 from nltk.translate.bleu_score import corpus_bleu
 from model.visualization import Visualization
+from einops.einops import rearrange
 
-def write_on_tensorboard_evaluate(epoch, expected_captions,generated_captions,image):
+def write_on_tensorboard_evaluate(epoch, expected_captions,generated_captions):#,image,loss):
 	tensorboard_panel_eval.add_sentences_comparison(epoch,expected_captions,generated_captions)
 	#tensorboard_panel_eval.add_loss(epoch,loss)
-	tensorboard_panel_eval.add_image(epoch,image,expected_captions,generated_captions)
+	#tensorboard_panel_eval.add_image(epoch,image,expected_captions,generated_captions)
 def evaluate(model, test_loader, vocab, device, epoch):
 	model.eval()
 
@@ -52,7 +53,7 @@ def evaluate(model, test_loader, vocab, device, epoch):
 				
 
 		return total_loss / (idx+1)
-def evaluate_tr(model, test_loader, device, epoch):
+def evaluate_tr(model, test_loader, device, epoch,criterion):
 	model.eval()
 
 	total_loss = 0.
@@ -62,10 +63,17 @@ def evaluate_tr(model, test_loader, device, epoch):
 			img, target = batch
 			img = img.to(device)
 			target = target.to(device)
+			target[target==2]=0
 			sentence_s = []
 			target_s = []
 			sentences = []
 			attention_w = []
+			# output = model(img, target[:,:-1])
+			# output = rearrange(
+			# 	output,
+			# 	'bsz seq_len vocab_size -> bsz vocab_size seq_len'
+			# )
+			# loss = criterion(output, target[:,1:])
 			for i in range(img.shape[0]):
 				sentence = model.generate(image=img[i].unsqueeze(0))
 				sentence_s=sentence.split(' ')
@@ -74,6 +82,14 @@ def evaluate_tr(model, test_loader, device, epoch):
 				target_s.append(model.vocab.generate_caption(target[i,1:]).split(' '))
 				reference_corpus = target_s[i]
 				candidate_corpus = sentence
+			#example = model.vocab.generate_caption(torch.argmax(output[0,:,:].transpose(1, 0), dim=-1))
+			#reference = model.vocab.generate_caption(target[0, 1:])
+			#if idx % 10 ==0:
+			#	print(f'Evaluating batch {idx} / {len(test_loader)} loss:{loss}...')
+			#	print(f'Gen example: {example}')
+			#	print(f'Exp example: {reference}')
+			#write_on_tensorboard_evaluate(epoch=idx+epoch,expected_captions=reference, generated_captions=example,image=img[0],loss=loss.item())
+
 			if idx % 10 == 0:
 				num_img=random.randint(0,img.shape[0]-1)
 				example=' '.join(sentences[num_img])
@@ -81,14 +97,14 @@ def evaluate_tr(model, test_loader, device, epoch):
 				print(f'Evaluating batch {idx} / {len(test_loader)}...')
 				print(f'Gen example: {example}')
 				print(f'Exp example: {reference}')
-				string=str(num_img)+'_epoch_'+str(epoch)+'_plot.png'
+			#	string=str(num_img)+'_epoch_'+str(epoch)+'_plot.png'
 			#	string_att=str(num_img)+'_epoch_'+str(epoch)+'_plot_att.png'
 				#Visualization.show_image(img[num_img],title=example,fn=string)
-			#	Visualization.plot_attention(img[num_img],sentences[num_img][:-1],attention_w[num_img],fn=string_att)
-				write_on_tensorboard_evaluate(epoch=idx+epoch,expected_captions=reference, generated_captions=example,image=img[num_img])
+				write_on_tensorboard_evaluate(epoch=idx+epoch,expected_captions=reference, generated_captions=example)
 				
 				
-			total_loss += corpus_bleu(target_s,sentences,(1.0/1.0,))			
+				
+			#total_loss += corpus_bleu(target_s,sentences,(1.0/1.0,))			
 				
 
 		return total_loss / (idx+1)

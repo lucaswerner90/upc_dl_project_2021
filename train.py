@@ -83,12 +83,14 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device)
 		img, target = img.to(device), target.to(device)
 
 		optimizer.zero_grad()
+		target_loss=target
+		target[target==2]=0
 		output = model(img, target[:,:-1])
 		output = rearrange(
 			output,
 			'bsz seq_len vocab_size -> bsz vocab_size seq_len'
 		)
-		loss = criterion(output, target[:,1:])
+		loss = criterion(output, target_loss[:,1:])
 		if i % 100 == 0:
 			print('--------------------------------------------------------------------------------------------------')
 			print(f'Epoch {epoch} batch: {i}/{len(train_loader)} loss: {loss.item()}')
@@ -119,6 +121,6 @@ def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, dev
 			print(f'Scheduler: {scheduler.get_last_lr()[0]} ')
 			if epoch % 5 == 0:
 				model.save_model(epoch)
-			val_loss = evaluate_tr(model=model,test_loader=test_loader,device=device,epoch=epoch)
+			val_loss = evaluate_tr(model=model,test_loader=test_loader,device=device,epoch=epoch, criterion=criterion)
 
 	
