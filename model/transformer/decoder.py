@@ -36,7 +36,9 @@ class TransformerDecoder(nn.Module):
 
     def forward(self, image_features: Tensor, captions: Tensor):
         embeddings = self.embed(captions)
+        #image_features = self.positional_encoder(image_features)
         image_features = self.reduce_features(image_features)
+        #image_features = self.positional_encoder(image_features)
         positional_embeddings = self.positional_encoder(embeddings)
         outputs = self.transformer_decoder.forward(
             tgt=positional_embeddings.transpose(0,1),
