@@ -13,6 +13,7 @@ from train import train, split_subsets
 import json
 import pickle
 from torch.utils.data.dataset import Subset
+import random
 
 CONFIGURATION = None
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -24,7 +25,16 @@ with open(os.path.join(cwd, 'config.json')) as f:
 hparams = CONFIGURATION['HPARAMS']
 hparams['DEVICE'] = device
 
-use_ViT_Enc = True
+use_ViT_Enc = False
+random_subsets = False
+one_batch = False
+do_training = False
+
+print("Defined parameters:")
+print("Use_Vit_Enc: ",use_ViT_Enc)
+print("random_subsets: ",random_subsets)
+print("one_batch: ",one_batch)
+print("do_training: ",do_training)
 
 def main():
 
@@ -70,8 +80,16 @@ def main():
 
 	## Perform the split of the dataset
 	
-	train_split, test_split = split_subsets(dataset,all_captions=True)
-	
+	if random_subsets==False:
+		print("It is using fixed subsets!!!!")
+		train_list = [*range(0,int(len(dataset)*0.8))]
+		test_list = [*range(int(len(dataset)*0.8),len(dataset))]
+		random.shuffle(train_list)
+		train_split =  Subset(dataset,train_list)
+		test_split =  Subset(dataset,test_list)
+	else:
+		train_split, test_split = split_subsets(dataset,all_captions=True)
+
 #  Aquesta línia em provocava errors quan corria el codi desde GPU
 #	if (torch.cuda.is_available()):
 #		torch.set_default_tensor_type('torch.cuda.FloatTensor')
@@ -93,7 +111,6 @@ def main():
 
 
 #	Si volem entrenar només amb un batch
-	one_batch = True
 
 	if one_batch==True:
 		print("Only uses one batch for training!!!!!")
@@ -101,20 +118,39 @@ def main():
 		train_split =  Subset(dataset,list)
 		train_loader = DataLoader(train_split, shuffle=True, batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(
 		pad_idx=dataset.vocab.word_to_index['<PAD>'], batch_first=True))	
+	else:
+		print("We use the whole dataset for training!!!!!")
 
-	train(
-		num_epochs=hparams['NUM_EPOCHS'],
-		model=model,
-		train_loader=train_loader,
-		test_loader=test_loader,
-		optimizer=optimizer,
-		criterion=criterion,
-		device=hparams['DEVICE'],
-		log_interval=hparams['LOG_INTERVAL'],
-		vocab=dataset.vocab,
-		scheduler=scheduler
-	)
+	if do_training == True:
+		print("We are training")
+		train(
+			num_epochs=hparams['NUM_EPOCHS'],
+			model=model,
+			train_loader=train_loader,
+			test_loader=test_loader,
+			optimizer=optimizer,
+			criterion=criterion,
+			device=hparams['DEVICE'],
+			log_interval=hparams['LOG_INTERVAL'],
+			vocab=dataset.vocab,
+			scheduler=scheduler
+		)
+	else:
+		print("We are not training")
+		model_epoch1 = ImageCaptioningModel(
+			image_features_dim=hparams['IMAGE_FEATURES_DIM'],
+			embed_size=hparams['EMBED_SIZE'],
+			vocab = dataset.vocab,
+			caption_max_length=hparams['MAX_LENGTH'],
+			attention_dim=hparams['ATTENTION_DIM']
+		).to(hparams['DEVICE'])
 
+		epoch = 1
+		filename = os.path.join('model','checkpoints','Epoch_'+str(epoch)+'_model_Pere_Transf_state.pth')
+		model_state = torch.load(filename,map_location=torch.device('cpu'))
+
+		model_epoch1.load_state_dict(model_state['model'])
+		print("ok")
 
 if __name__ == "__main__":
 	main()
