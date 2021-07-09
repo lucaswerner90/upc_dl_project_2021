@@ -114,7 +114,7 @@ def main():
 
 	if one_batch==True:
 		print("Only uses one batch for training!!!!!")
-		list = [*range(0,30,5)]
+		list = [*range(0,hparams['BATCH_SIZE']*5,5)]
 		train_split =  Subset(dataset,list)
 		train_loader = DataLoader(train_split, shuffle=True, batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(
 		pad_idx=dataset.vocab.word_to_index['<PAD>'], batch_first=True))	
