@@ -51,6 +51,13 @@ class Vocabulary():
         tok_text = self.tokenize(text)
         return [self.word_to_index[token] if token in self.word_to_index else self.word_to_index['<UNK>'] for token in tok_text]
 
+    def generate_phrase(self,caption):
+        phrase = ' '.join([word for \
+            word in self.generate_caption(caption).split() \
+            if (word!='<PAD>') and (word!='<END>') 
+        ])
+        return phrase
+
     #to reconstruct caption
     #TODO: Pending to concat caption
     def generate_caption(self,vec):
