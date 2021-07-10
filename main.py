@@ -49,15 +49,15 @@ def main():
 	
 	train_split, test_split = split_subsets(dataset,all_captions=True)
 
-	train_loader = DataLoader(train_split, shuffle=False, batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(
+	train_loader = DataLoader(train_split, shuffle=True, batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(
 		pad_idx=dataset.vocab.word_to_index['<PAD>'], batch_first=True))
 
-	test_loader = DataLoader(test_split, shuffle=False, batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(
+	test_loader = DataLoader(test_split, shuffle=True, batch_size=hparams['BATCH_SIZE'], collate_fn=CapsCollate(
 		pad_idx=dataset.vocab.word_to_index['<PAD>'], batch_first=True))
 
 	optimizer = optim.Adam(model.parameters(), lr=hparams['LEARNING_RATE'], betas=(0.9, 0.98), eps=1e-9)
-	#criterion = nn.CrossEntropyLoss(ignore_index=dataset.vocab.word_to_index['<PAD>'])
-	criterion = nn.CrossEntropyLoss()
+	criterion = nn.CrossEntropyLoss(ignore_index=dataset.vocab.word_to_index['<PAD>'])
+	
 	train(
 		num_epochs=hparams['NUM_EPOCHS'],
 		model=model,

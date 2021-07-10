@@ -67,13 +67,7 @@ def evaluate_tr(model, test_loader, device, epoch,criterion):
 			sentence_s = []
 			target_s = []
 			sentences = []
-			attention_w = []
-			# output = model(img, target[:,:-1])
-			# output = rearrange(
-			# 	output,
-			# 	'bsz seq_len vocab_size -> bsz vocab_size seq_len'
-			# )
-			# loss = criterion(output, target[:,1:])
+			
 			for i in range(img.shape[0]):
 				sentence = model.generate(image=img[i].unsqueeze(0))
 				sentence_s=sentence.split(' ')
@@ -82,13 +76,6 @@ def evaluate_tr(model, test_loader, device, epoch,criterion):
 				target_s.append(model.vocab.generate_caption(target[i,1:]).split(' '))
 				reference_corpus = target_s[i]
 				candidate_corpus = sentence
-			#example = model.vocab.generate_caption(torch.argmax(output[0,:,:].transpose(1, 0), dim=-1))
-			#reference = model.vocab.generate_caption(target[0, 1:])
-			#if idx % 10 ==0:
-			#	print(f'Evaluating batch {idx} / {len(test_loader)} loss:{loss}...')
-			#	print(f'Gen example: {example}')
-			#	print(f'Exp example: {reference}')
-			#write_on_tensorboard_evaluate(epoch=idx+epoch,expected_captions=reference, generated_captions=example,image=img[0],loss=loss.item())
 
 			if idx % 10 == 0:
 				num_img=random.randint(0,img.shape[0]-1)
