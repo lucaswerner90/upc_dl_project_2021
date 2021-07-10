@@ -121,7 +121,7 @@ def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, dev
 	"""
 	Executes model training. Saves model to a file every 5 epoch.
 	"""	
-	single_batch=True
+	single_batch=False
 	model.train()
 	scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1.0, gamma=0.95)
 	batch=next(iter(train_loader))
