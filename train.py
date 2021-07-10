@@ -112,10 +112,10 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device)
 		torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.25)
 		optimizer.step()
 
-		candidate_corpus = model.vocab.generate_caption(torch.argmax(output[0,...,1:].transpose(1, 0), dim=-1))
-		reference_corpus = model.vocab.generate_caption(target[0, 1:])
+		candidate_corpus = torch.argmax(output.transpose(1, 2), dim=-1)
+		reference_corpus = target[...,1:]
 				
-		write_on_tensorboard(i+(epoch*len(train_loader)),loss.item(),img[0],reference_corpus,candidate_corpus)
+		write_on_tensorboard(epoch=i+(epoch*len(train_loader)),model=model,loss=loss.item(),images=img,expected_captions=reference_corpus,generated_captions=candidate_corpus)
 
 def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, device):
 	"""
