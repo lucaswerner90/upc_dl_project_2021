@@ -8,7 +8,7 @@ from dataset.vocabulary import Vocabulary
 from model.transformer.decoder import TransformerDecoder
 
 class ImageCaptioningModel(nn.Module):
-	def __init__(self, image_features_dim:int,embed_size:int, vocab:Vocabulary, caption_max_length:int,decoder_num_layers=1):
+	def __init__(self, image_features_dim:int,embed_size:int, vocab:Vocabulary, caption_max_length:int,decoder_num_layers=4):
 		super(ImageCaptioningModel, self).__init__()
 		self.vocab = vocab
 		self.vocab_size = len(self.vocab.word_to_index)
@@ -27,9 +27,9 @@ class ImageCaptioningModel(nn.Module):
 
 	def generate(self,image):
 		image_features = self.encoder.forward(image)
-		#output = target[:,:-10]
+		
 		output = torch.LongTensor([self.vocab.word_to_index['<START>']])\
-			.expand(1,image_features.size(0)).to(image_features.device)
+			.expand(image_features.size(0),1).to(image_features.device)
 		
 		for i in range(self.caption_max_length):
 			next_word=self.decoder.forward(image_features,output).argmax(-1)[:,-1]
@@ -64,7 +64,8 @@ class ImageCaptioningModel(nn.Module):
 		return sentence, attention_weights
 
 	def save_model(self,epoch):
-		filename = os.path.join('model','trained_models','transformer_model_epoch_{epoch}.pth')
+		str='transformer_model_epoch_'+epoch+'.pth'
+		filename = os.path.join('model','trained_models',str)
 		model_state = {
 		'epoch':epoch,
 		'model':self.state_dict()

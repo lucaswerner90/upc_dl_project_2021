@@ -84,14 +84,20 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device)
 		img, target = img.to(device), target.to(device)
 
 		optimizer.zero_grad()
-		#target_loss=target
+
+		aux=torch.ones(target.shape[0],1,dtype=int)*model.vocab.word_to_index['<PAD>']
+		aux=aux.to(target.device)
+		target=torch.cat([target,aux],dim=1)
+
+		target_loss=target
 		target[target==2]=0
+		
 		output = model(img, target[:,:-1])
 		output = rearrange(
 			output,
 			'bsz seq_len vocab_size -> bsz vocab_size seq_len'
 		)
-		loss = criterion(output, target[:,1:])
+		loss = criterion(output, target_loss[:,1:])
 		if i % 100 == 0:
 			print('--------------------------------------------------------------------------------------------------')
 			print(f'Epoch {epoch} batch: {i}/{len(train_loader)} loss: {loss.item()}')
@@ -109,7 +115,7 @@ def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, dev
 	"""
 	Executes model training. Saves model to a file every 5 epoch.
 	"""	
-	single_batch=True
+	single_batch=False
 	model.train()
 	scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1.0, gamma=0.95)
 	batch=next(iter(train_loader))
@@ -125,6 +131,6 @@ def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, dev
 			print(f'Scheduler: {scheduler.get_last_lr()[0]} ')
 			if epoch % 5 == 0:
 				model.save_model(epoch)
-			val_loss = evaluate_tr(model=model,test_loader=train_loader,device=device,epoch=epoch, criterion=criterion)
+			val_loss = evaluate_tr(model=model,test_loader=test_loader,device=device,epoch=epoch, criterion=criterion)
 
 	
