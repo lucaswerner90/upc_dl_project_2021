@@ -1,16 +1,23 @@
 from einops.einops import rearrange
 import torch
-import os
 from panel.main import tensorboard_panel
 from torch.utils.data.dataset import Subset
 from evaluate import evaluate, evaluate_tr
 import random
 import numpy as np
 
-def write_on_tensorboard(epoch:int, loss:int, image, expected_captions, generated_captions):
-	tensorboard_panel.add_sentences_comparison(epoch,expected_captions,generated_captions)
-	tensorboard_panel.add_loss(epoch,loss)
-	tensorboard_panel.add_image(epoch,image,expected_captions,generated_captions)
+
+def write_on_tensorboard(epoch:int, model, loss:int, images, expected_captions, generated_captions):
+	convert_caption = lambda caption: model.vocab.generate_phrase(caption)
+	expected_captions = list(map(convert_caption, expected_captions))
+	generated_captions = list(map(convert_caption, generated_captions))
+
+	tensorboard_panel.add_sentences_comparison(epoch, expected_captions,generated_captions)
+	tensorboard_panel.add_images(epoch, images, expected_captions, generated_captions)
+	tensorboard_panel.add_loss(epoch, loss)
+	tensorboard_panel.add_model_weights(epoch,model)
+    	
+
 
 def split_subsets(dataset,train_percentage=0.8,all_captions=True):
 	"""
@@ -49,7 +56,7 @@ def split_subsets(dataset,train_percentage=0.8,all_captions=True):
 	return train_split,test_split
 
 
-def train_single_batch(model,batch,optimizer,criterion,device):
+def train_single_batch(epoch, model,batch,optimizer,criterion,device):
 	img, target = batch
 	img, target = img.to(device), target.to(device)
 
@@ -68,12 +75,11 @@ def train_single_batch(model,batch,optimizer,criterion,device):
 	torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.25, error_if_nonfinite=True)
 	optimizer.step()
 
-	candidate_corpus = model.vocab.generate_caption(torch.argmax(output[0,...,:].transpose(1, 0), dim=-1))
-	reference_corpus = model.vocab.generate_caption(target[0, 1:])
-	print('--------------------------------------------------------------------------------------------------')
-	print(candidate_corpus)
-	print(reference_corpus)
-	print('--------------------------------------------------------------------------------------------------')
+	if not epoch%2:
+		generated_captions = torch.argmax(output.transpose(1, 2), dim=-1)
+		expected_captions = target[...,1:]
+		write_on_tensorboard(epoch=epoch, model=model, loss=loss.item(), images=img, expected_captions=expected_captions, generated_captions=generated_captions)
+
 
 def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device):
 	"""
@@ -115,16 +121,15 @@ def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, dev
 	"""
 	Executes model training. Saves model to a file every 5 epoch.
 	"""	
-	single_batch=False
+	single_batch=True
 	model.train()
 	scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1.0, gamma=0.95)
 	batch=next(iter(train_loader))
 	for epoch in range(1,num_epochs+1):
 		if single_batch:
-			train_single_batch(model, batch,optimizer, criterion, device)
-			if epoch % 100 == 0:
-				val_loss = evaluate_tr(model=model,test_loader=test_loader,device=device,epoch=epoch, criterion=criterion)
-			
+
+			train_single_batch(epoch, model, batch,optimizer, criterion, device)
+
 		else:
 			train_single_epoch(epoch, model, train_loader,optimizer, criterion, device)
 			scheduler.step()
