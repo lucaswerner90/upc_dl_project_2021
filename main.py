@@ -39,20 +39,21 @@ def main(args):
 
 	# Perform the split of the dataset
 	train_split, test_split = split_subsets(dataset,all_captions=True)
-	
 
 	train_loader = DataLoader(train_split, shuffle=True, batch_size=args['batch_size'], collate_fn=CapsCollate(
 		pad_idx=dataset.vocab.word_to_index['<PAD>'], batch_first=True))
+
 	test_loader = DataLoader(test_split, shuffle=True, batch_size=args['batch_size'], collate_fn=CapsCollate(
 		pad_idx=dataset.vocab.word_to_index['<PAD>'], batch_first=True))
 
 	optimizer = optim.Adam(model.parameters(), lr=args['learning_rate'], betas=(0.9, 0.98), eps=1e-9)
 	criterion = nn.CrossEntropyLoss(ignore_index=dataset.vocab.word_to_index['<PAD>'])
-
+	
 	train(
 		num_epochs=args['epochs'],
 		model=model,
 		train_loader=train_loader,
+		test_loader=test_loader,
 		optimizer=optimizer,
 		criterion=criterion,
 		device=device,

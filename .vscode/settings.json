@@ -15,5 +15,5 @@
 		"./model",
 		"./panel"
 	],
-	"python.pythonPath": ".env/bin/python"
+	"python.pythonPath": ".env/bin/python3"
 }
