@@ -8,7 +8,7 @@ from dataset.vocabulary import Vocabulary
 from model.transformer.decoder import TransformerDecoder
 
 class ImageCaptioningModel(nn.Module):
-	def __init__(self, image_features_dim:int,embed_size:int, vocab:Vocabulary, caption_max_length:int,decoder_num_layers=8):
+	def __init__(self, image_features_dim:int,embed_size:int, vocab:Vocabulary, caption_max_length:int,decoder_num_layers=4):
 		super(ImageCaptioningModel, self).__init__()
 		self.vocab = vocab
 		self.vocab_size = len(self.vocab.word_to_index)
@@ -24,7 +24,20 @@ class ImageCaptioningModel(nn.Module):
 		images_features = self.encoder.forward(images)
 		predictions = self.decoder.forward(images_features, captions)
 		return predictions
-	
+
+	def generate(self,image):
+		image_features = self.encoder.forward(image)
+		
+		output = torch.LongTensor([self.vocab.word_to_index['<START>']])\
+			.expand(image_features.size(0),1).to(image_features.device)
+		
+		for i in range(self.caption_max_length):
+			next_word=self.decoder.forward(image_features,output).argmax(-1)[:,-1]
+			
+			output = torch.cat([output,next_word.unsqueeze(0)],dim=1)
+		return self.vocab.generate_caption(output.squeeze(0))
+			
+		
 	def inference(self, image):
 		image_features = self.encoder(image)
 		hidden = self.decoder.init_hidden(image.shape[0])
@@ -50,6 +63,11 @@ class ImageCaptioningModel(nn.Module):
 		sentence=self.vocab.generate_caption(sentence)
 		return sentence, attention_weights
 
-	def save_model(self):
-		filename = os.path.join('model','trained_models','transformer_model.pth')
-		torch.save(self.state_dict(), filename)
+	def save_model(self,epoch):
+		str='transformer_model_epoch_'+str(epoch)+'.pth'
+		filename = os.path.join('model','trained_models',str)
+		model_state = {
+		'epoch':epoch,
+		'model':self.state_dict()
+		}
+		torch.save(model_state, filename)

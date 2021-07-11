@@ -18,7 +18,8 @@ class TransformerDecoder(nn.Module):
 
         self.transformer_decoder_layer = nn.TransformerDecoderLayer(
             d_model=self.embedding_size,
-            nhead=4
+            nhead=4,
+            dropout=0.1
         )
         self.transformer_decoder = nn.TransformerDecoder(
             self.transformer_decoder_layer,
@@ -28,18 +29,21 @@ class TransformerDecoder(nn.Module):
         self.linear = nn.Linear(in_features=self.embedding_size, out_features=self.vocab_size)
 
     def generate_square_subsequent_mask(self, sz):
-        mask = (torch.triu(torch.ones(sz, sz)) == 1).transpose(0, 1)
-        mask = mask.float().masked_fill(mask == 0, float(
-            '-inf')).masked_fill(mask == 1, float(0.0))
-        return mask
+         mask = (torch.triu(torch.ones(sz, sz)) == 1).transpose(0, 1)
+         mask = mask.float().masked_fill(mask == 0, float(
+             '-inf')).masked_fill(mask == 1, float(0.0))
+         return mask
 
     def forward(self, image_features: Tensor, captions: Tensor):
         embeddings = self.embed(captions)
+        
         image_features = self.reduce_features(image_features)
+        
         positional_embeddings = self.positional_encoder(embeddings)
         outputs = self.transformer_decoder.forward(
             tgt=positional_embeddings.transpose(0,1),
-            memory=image_features.transpose(0,1)
+            memory=image_features.transpose(0,1),
+            tgt_mask=self.generate_square_subsequent_mask(positional_embeddings.transpose(0,1).size(0)).to(image_features.device)
         )
         y = self.linear(outputs.transpose(0,1))
         return y

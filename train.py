@@ -2,8 +2,10 @@ from einops.einops import rearrange
 import torch
 from panel.main import tensorboard_panel
 from torch.utils.data.dataset import Subset
+from evaluate import evaluate, evaluate_tr
 import random
 import numpy as np
+
 
 def write_on_tensorboard(epoch:int, model, loss:int, images, expected_captions, generated_captions):
 	convert_caption = lambda caption: model.vocab.generate_phrase(caption)
@@ -11,10 +13,11 @@ def write_on_tensorboard(epoch:int, model, loss:int, images, expected_captions, 
 	generated_captions = list(map(convert_caption, generated_captions))
 
 	tensorboard_panel.add_sentences_comparison(epoch, expected_captions,generated_captions)
-	tensorboard_panel.add_images(epoch, images, expected_captions, generated_captions)
+	#tensorboard_panel.add_images(epoch, images, expected_captions, generated_captions)
 	tensorboard_panel.add_loss(epoch, loss)
-	tensorboard_panel.add_model_weights(epoch,model)
+	#tensorboard_panel.add_model_weights(epoch,model)
     	
+
 
 def split_subsets(dataset,train_percentage=0.8,all_captions=True):
 	"""
@@ -58,7 +61,8 @@ def train_single_batch(epoch, model,batch,optimizer,criterion,device):
 	img, target = img.to(device), target.to(device)
 
 	optimizer.zero_grad()
-	output = model(img, target[...,:-1])
+	target[target==2]=0
+	output = model(img,  target[:,:-1])
 	output = rearrange(
 		output,
 		'bsz seq_len vocab_size -> bsz vocab_size seq_len'
@@ -87,41 +91,52 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device)
 		img, target = img.to(device), target.to(device)
 
 		optimizer.zero_grad()
-		output = model(img, target)
+
+		aux=torch.ones(target.shape[0],1,dtype=int)*model.vocab.word_to_index['<PAD>']
+		aux=aux.to(target.device)
+		target=torch.cat([target,aux],dim=1)
+
+		target_loss=target
+		#target[target==2]=0
+		
+		output = model(img, target[:,:-1])
 		output = rearrange(
 			output,
 			'bsz seq_len vocab_size -> bsz vocab_size seq_len'
 		)
-		loss = criterion(output[...,:-1], target[...,1:])
-		print('--------------------------------------------------------------------------------------------------')
-		print(f'Epoch {epoch} batch: {i} loss: {loss.item()}')
-		
+		loss = criterion(output, target_loss[:,1:])
+		if i % 100 == 0:
+			print('--------------------------------------------------------------------------------------------------')
+			print(f'Epoch {epoch} batch: {i}/{len(train_loader)} loss: {loss.item()}')
+
 		loss.backward()
-		torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.25, error_if_nonfinite=True)
+		torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.25)
 		optimizer.step()
 
-		candidate_corpus = model.vocab.generate_caption(torch.argmax(output[0,...,1:].transpose(1, 0), dim=-1))
-		reference_corpus = model.vocab.generate_caption(target[0, 1:])
-		print('--------------------------------------------------------------------------------------------------')
-		print(candidate_corpus)
-		print(reference_corpus)
-		print('--------------------------------------------------------------------------------------------------')
+		candidate_corpus = torch.argmax(output.transpose(1, 2), dim=-1)
+		reference_corpus = target[...,1:]
+				
+		write_on_tensorboard(epoch=epoch*i,model=model,loss=loss.item(),images=img,expected_captions=reference_corpus,generated_captions=candidate_corpus)
 
-def train(num_epochs, model, train_loader, optimizer, criterion, device):
+def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, device):
 	"""
 	Executes model training. Saves model to a file every 5 epoch.
 	"""	
-	single_batch=True
+	single_batch=False
 	model.train()
 	scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1.0, gamma=0.95)
 	batch=next(iter(train_loader))
 	for epoch in range(1,num_epochs+1):
 		if single_batch:
+
 			train_single_batch(epoch, model, batch,optimizer, criterion, device)
+
 		else:
 			train_single_epoch(epoch, model, train_loader,optimizer, criterion, device)
 			scheduler.step()
 			print(f'Scheduler: {scheduler.get_last_lr()[0]} ')
 			if epoch % 5 == 0:
-				model.save_model(model, epoch)
+				model.save_model(epoch)
+			val_loss = evaluate_tr(model=model,test_loader=test_loader,device=device,epoch=epoch, criterion=criterion)
+
 	
