@@ -13,9 +13,9 @@ def write_on_tensorboard(epoch:int, model, loss:int, images, expected_captions, 
 	generated_captions = list(map(convert_caption, generated_captions))
 
 	tensorboard_panel.add_sentences_comparison(epoch, expected_captions,generated_captions)
-	tensorboard_panel.add_images(epoch, images, expected_captions, generated_captions)
+	#tensorboard_panel.add_images(epoch, images, expected_captions, generated_captions)
 	tensorboard_panel.add_loss(epoch, loss)
-	tensorboard_panel.add_model_weights(epoch,model)
+	#tensorboard_panel.add_model_weights(epoch,model)
     	
 
 
@@ -96,7 +96,7 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device)
 		target=torch.cat([target,aux],dim=1)
 
 		target_loss=target
-		target[target==2]=0
+		#target[target==2]=0
 		
 		output = model(img, target[:,:-1])
 		output = rearrange(
@@ -115,7 +115,7 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device)
 		candidate_corpus = torch.argmax(output.transpose(1, 2), dim=-1)
 		reference_corpus = target[...,1:]
 				
-		write_on_tensorboard(epoch=epoch,model=model,loss=loss.item(),images=img,expected_captions=reference_corpus,generated_captions=candidate_corpus)
+		write_on_tensorboard(epoch=epoch+i,model=model,loss=loss.item(),images=img,expected_captions=reference_corpus,generated_captions=candidate_corpus)
 
 def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, device):
 	"""
