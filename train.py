@@ -107,7 +107,7 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device)
 		print(reference_corpus)
 		print('--------------------------------------------------------------------------------------------------')
 
-def train(num_epochs, model, train_loader, optimizer, criterion, device):
+def train(num_epochs, model, train_loader, optimizer, criterion, device, log_interval):
 	"""
 	Executes model training. Saves model to a file every 5 epoch.
 	"""	
@@ -122,6 +122,6 @@ def train(num_epochs, model, train_loader, optimizer, criterion, device):
 			train_single_epoch(epoch, model, train_loader,optimizer, criterion, device)
 			scheduler.step()
 			print(f'Scheduler: {scheduler.get_last_lr()[0]} ')
-			if epoch % 5 == 0:
+			if not epoch % log_interval:
 				model.save_model(model, epoch)
 	

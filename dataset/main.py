@@ -1,5 +1,4 @@
 import os
-import nltk
 import pandas as pd
 import torch
 from torch.utils.data import Dataset, DataLoader
@@ -26,12 +25,9 @@ class Flickr8kDataset(Dataset):
         self.vocab.build_vocabulary(self.caption.tolist(),reduce,vocab_max_size)
         
 
-    def read_image(self,filename:str) -> Image:
+    def read_image(self,filename:str):
         """
         Reads the image file based on the filename
-
-        Args:
-            filename (string): Filename that contains the image
 
         Returns:
             [Image]: Returns a PIL.Image object 
@@ -84,7 +80,7 @@ if __name__ == "__main__":
         # transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225]),
         transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
     ])
-    dataset = Flickr8kDataset(transform=transform,reduce=True,vocab_max_size=MAX_SIZE)
+    dataset = Flickr8kDataset(dataset_folder='data',transform=transform,reduce=True,vocab_max_size=MAX_SIZE)
 
     # Test the dataloader
     dataloader = DataLoader(dataset=dataset,batch_size=batch_size, collate_fn=CapsCollate(pad_idx=dataset.vocab.word_to_index['<PAD>'],batch_first=True))

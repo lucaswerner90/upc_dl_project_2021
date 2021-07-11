@@ -8,7 +8,12 @@
       "name": "Python: Main",
       "type": "python",
       "request": "launch",
-      "module": "main"
+      "module": "main",
+      "args": [
+        "--batch-size=64",
+        "--vocabulary-size=5000",
+        "--learning-rate=1e-3"
+      ]
     },
     {
       "name": "Python: Current File",
