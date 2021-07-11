@@ -89,10 +89,9 @@ def evaluate_tr(model, test_loader, device, epoch,criterion):
 				sentence = []
 				num_img=random.randint(0,img.shape[0]-1)
 				sentence = model.generate(image=img[num_img].unsqueeze(0))
-				example=' '.join(sentence)
 				reference=model.vocab.generate_caption(target[num_img,1:])
 				print(f'Evaluating batch {idx} / {len(test_loader)}...')
-				print(f'Gen example (no teacher_forcing): {example}')
+				print(f'Gen example (no teacher_forcing): {sentence}')
 				print(f'Exp example: {reference}')
 			#	string=str(num_img)+'_epoch_'+str(epoch)+'_plot.png'
 			#	string_att=str(num_img)+'_epoch_'+str(epoch)+'_plot_att.png'
