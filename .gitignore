@@ -132,7 +132,5 @@ dmypy.json
 notes.txt
 #model type
 *.pth
-#sample images
-*.png
 config.json
 runs
