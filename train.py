@@ -74,7 +74,8 @@ def train_single_batch(epoch, model,batch,optimizer,criterion,device):
 	if not epoch%2:
 		generated_captions = torch.argmax(output.transpose(1, 2), dim=-1)
 		expected_captions = target[...,1:]
-		write_on_tensorboard(epoch=epoch, model=model, loss=loss.item(), images=img, expected_captions=expected_captions, generated_captions=generated_captions)
+		generated_captions, expected_captions, images = generated_captions[:16,...], expected_captions[:16,...], img[:16,...]
+		write_on_tensorboard(epoch=epoch, model=model, loss=loss.item(), images=images, expected_captions=expected_captions, generated_captions=generated_captions)
 
 
 def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device):

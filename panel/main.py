@@ -33,7 +33,7 @@ class Tensorboard:
 		px = 1/plt.rcParams['figure.dpi']  # pixel in inches
 		rows = int(sqrt(len(images)))
 		hfont = {'fontname':'Helvetica'}
-		fig, ax = plt.subplots(rows,rows,figsize=(1500*px, 1500*px))
+		fig, ax = plt.subplots(rows,rows,figsize=(2400*px, 2400*px))
 		fig.tight_layout(pad=10)
 		image = None
 		for row in range(rows):
