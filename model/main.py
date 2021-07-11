@@ -64,8 +64,8 @@ class ImageCaptioningModel(nn.Module):
 		return sentence, attention_weights
 
 	def save_model(self,epoch):
-		str='transformer_model_epoch_'+str(epoch)+'.pth'
-		filename = os.path.join('model','trained_models',str)
+		string_fn='transformer_model_epoch_'+str(epoch)+'.pth'
+		filename = os.path.join('model','trained_models',string_fn)
 		model_state = {
 		'epoch':epoch,
 		'model':self.state_dict()
