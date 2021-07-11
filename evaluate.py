@@ -85,7 +85,7 @@ def evaluate_tr(model, test_loader, device, epoch,criterion):
 			#	string=str(num_img)+'_epoch_'+str(epoch)+'_plot.png'
 			#	string_att=str(num_img)+'_epoch_'+str(epoch)+'_plot_att.png'
 				#Visualization.show_image(img[num_img],title=example,fn=string)
-			write_on_tensorboard_evaluate(epoch=idx+epoch,expected_captions=target[:,1:], generated_captions=sentences)
+			write_on_tensorboard_evaluate(epoch=idx*epoch,expected_captions=target[:,1:], generated_captions=sentences)
 				
 				
 				
