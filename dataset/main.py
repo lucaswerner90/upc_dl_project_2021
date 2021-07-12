@@ -14,8 +14,10 @@ class Flickr8kDataset(Dataset):
     Dataset for Flickr8k data treatment
     """
 
-    def __init__(self, dataset_folder,transform=None,reduce=False,vocab_max_size=5000):
+    def __init__(self, dataset_folder,transform=None,reduce=False,vocab_max_size=5000,feature_extractor=None):
         super(Flickr8kDataset, self).__init__()
+        assert not ((feature_extractor!=None and transform!=None)), "Both Feature_extractor and transform cannot be different than None"
+        self.feature_extractor = feature_extractor
         self.transform = transform
         self.images_folder = os.path.join(dataset_folder,'Images')
         self.dataframe = pd.read_csv(open(os.path.join(dataset_folder,'captions.txt'),'r'))
@@ -56,6 +58,8 @@ class Flickr8kDataset(Dataset):
 
         if self.transform:
             image = self.transform(image)
+        elif self.feature_extractor:
+            image = self.feature_extractor(images=image, return_tensors="pt").data['pixel_values'].squeeze()
 
         tok_vec = []
         tok_vec += [self.vocab.word_to_index['<START>']]

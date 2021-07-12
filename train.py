@@ -23,6 +23,7 @@ def split_subsets(dataset,train_percentage=0.8,all_captions=True):
 	"""
 	Performs the split of the dataset into Train and Test
 	"""	
+	np.random.seed(42)
 	if all_captions==True:
 
 		# Get a list of all indexes in the dataset and convert to a numpy array  
