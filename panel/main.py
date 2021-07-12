@@ -5,13 +5,14 @@ from model.visualization import Visualization
 import matplotlib.pyplot as plt
 
 class Tensorboard:
-	writer = SummaryWriter('runs/ImageCaptioning')
+	def __init__(self,directory:str='runs/ImageCaptioningAttention') -> None:
+		self.writer = SummaryWriter(directory)
 
 	def add_sentences_comparison(self,epoch:int,expected:str,generated:str):
 		self.writer.add_text('Expected/Generated', f'Expected: {expected} \n\n Generated:{generated}', epoch)
 
 	def add_loss(self,epoch:int,loss:int):
-		self.writer.add_scalar('Loss/train', loss, epoch)
+		self.writer.add_scalar('Loss', loss, epoch)
 
 	def add_bleu(self,epoch:int,bleu:int):
 		self.writer.add_scalar('Bleu/train', bleu, epoch)
@@ -27,3 +28,4 @@ class Tensorboard:
 
 
 tensorboard_panel = Tensorboard()
+tensorboard_panel_eval = Tensorboard('runs/ImageCaptioningAttentionEvaluate')

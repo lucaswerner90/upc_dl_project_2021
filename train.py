@@ -2,6 +2,7 @@ import torch
 import os
 from model.visualization import Visualization
 from panel.main import tensorboard_panel
+from evaluate import evaluate
 
 
 def write_on_tensorboard(epoch:int, loss:int, bleu:int, image, expected_captions, generated_captions):
@@ -23,8 +24,13 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device)
 		optimizer.zero_grad()
 
 		output, _ = model(img, target)
+		output=output.to(img.device)
 		loss = criterion(output, target[:,1:])
 		loss.backward()
+
+		if i % 100 == 0:
+			print('--------------------------------------------------------------------------------------------------')
+			print(f'Epoch {epoch} batch: {i}/{len(train_loader)} loss: {loss.item()}')
 
 		torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.25)
 
@@ -34,29 +40,29 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device)
 		reference_corpus = [model.vocab.generate_caption(target[0, 1:])]
 		bleu = 0
 		# bleu = bleu_score(candidate_corpus, reference_corpus)
-		write_on_tensorboard(i+(epoch*len(train_loader)),loss.item(),bleu,img[0],reference_corpus,candidate_corpus)
+		write_on_tensorboard(len(train_loader)*(epoch-1)+i,loss.item(),bleu,img[0],reference_corpus,candidate_corpus)
 
-def evaluate(model,test_loader, vocab, device,criterion):
-	model.eval()
+# def evaluate(model,test_loader, vocab, device,criterion):
+# 	model.eval()
 
-	total_loss = 0.
-	#device= 'cpu'
-	with torch.no_grad():
-		for idx, batch in enumerate(iter(test_loader)):
-			img, target = batch
-			img = img.to(device)
-			target = target.to(device)
-			for i in range(img.shape[0]):
-				sentence = model.inference(image=img[i].unsqueeze(0),vocab=vocab)
-				alphas = model.forward(image=img[i].unsqueeze(0), vocab=vocab)[1]
+# 	total_loss = 0.
+# 	#device= 'cpu'
+# 	with torch.no_grad():
+# 		for idx, batch in enumerate(iter(test_loader)):
+# 			img, target = batch
+# 			img = img.to(device)
+# 			target = target.to(device)
+# 			for i in range(img.shape[0]):
+# 				sentence = model.inference(image=img[i].unsqueeze(0),vocab=vocab)
+# 				alphas = model.forward(image=img[i].unsqueeze(0), vocab=vocab)[1]
 			
 
-			caption = ' '.join(sentence)
-			Visualization.plot_attention((img[0]), sentence, alphas) # showing expected and plotting attention
-			total_loss += target.numel()*criterion(sentence,target).item()
-			n += target.numel()
+# 			caption = ' '.join(sentence)
+# 			Visualization.plot_attention((img[0]), sentence, alphas) # showing expected and plotting attention
+# 			total_loss += target.numel()*criterion(sentence,target).item()
+# 			n += target.numel()
 
-		return total_loss / n, caption
+# 		return total_loss / n, caption
 
 
 def save_model(model, epoch):
@@ -77,6 +83,8 @@ def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, dev
 
 	for epoch in range(1,num_epochs+1):
 		train_single_epoch(epoch, model, train_loader,optimizer, criterion, device)
+
+		val_loss=evaluate(model=model,epoch=epoch,test_loader=test_loader,vocab=model.vocab,device=device,criterion=criterion)
 
 		if epoch % 5 == 0:
 			save_model(model, epoch)

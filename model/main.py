@@ -26,7 +26,8 @@ class ImageCaptioningModel(nn.Module):
 
 		images_features = self.encoder(images)
 		bsz, *_ = images_features.shape
-		hidden = self.decoder.init_hidden(images.shape[0]) if initial_hidden == None else initial_hidden
+		hidden = self.decoder.init_hidden(images.shape[0]).to(images.device) if initial_hidden == None else initial_hidden.to(images.device)
+		hidden= hidden.to(images.device)
 		timesteps = captions.shape[-1]-1
 		attention_weights = []
 		predictions = torch.zeros(size=(timesteps,bsz,self.vocab_size))
