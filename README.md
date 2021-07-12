@@ -2,32 +2,37 @@
 # **Image Captioning - UPC AI w/ DL 2021**
 ![upc logo](./docs/captions.png)
 ## **Table of contents**
+---
 - [**Image Captioning - UPC AI w/ DL 2021**](#image-captioning---upc-ai-w-dl-2021)
-	- [**Table of contents**](#table-of-contents)
-	- [**Description**](#description)
-	- [**Installation**](#installation)
-		- [**Create the virtual environment**](#create-the-virtual-environment)
-		- [**Install the dependencies**](#install-the-dependencies)
-		- [**Train the model**](#train-the-model)
-		- [**Download the dataset (optional)**](#download-the-dataset-optional)
-	- [**Experiments**](#experiments)
-		- [**Attention model**](#attention-model)
-			- [**Architecture**](#architecture)
-			- [**Results**](#results)
-		- [**Transformer model in the decoder**](#transformer-model-in-the-decoder)
-			- [**Architecture**](#architecture-1)
-			- [**Results**](#results-1)
-		- [**Visual Transformers for the encoder**](#visual-transformers-for-the-encoder)
-			- [**Architecture**](#architecture-2)
-			- [**Results**](#results-2)
-	- [**Authors**](#authors)
+  - [## **Table of contents**](#-table-of-contents)
+  - [## **Description**](#-description)
+  - [## **Installation**](#-installation)
+    - [**Create the virtual environment**](#create-the-virtual-environment)
+    - [**Install the dependencies**](#install-the-dependencies)
+    - [**Train the model**](#train-the-model)
+    - [**Download the dataset (optional)**](#download-the-dataset-optional)
+  - [## **Preprocessing the data**](#-preprocessing-the-data)
+  - [## **Model experimentation**](#-model-experimentation)
+    - [**Recurrent network with attention**](#recurrent-network-with-attention)
+      - [**Architecture**](#architecture)
+      - [**Results**](#results)
+    - [**Transformer decoder**](#transformer-decoder)
+      - [**Architecture**](#architecture-1)
+      - [**Results**](#results-1)
+    - [**Visual Transformers for the encoder**](#visual-transformers-for-the-encoder)
+      - [**Architecture**](#architecture-2)
+      - [**Results**](#results-2)
+  - [## **Conclusions**](#-conclusions)
+  - [## **Future work**](#-future-work)
+  - [## **Authors**](#-authors)
 ## **Description**
+---
 The following project shows an image captioning system that uses state-of-the-art architectures in DL and AI such as Transformers and Visual Transformers.
 
 The goal of the project is to generate an accurate description given an input image, for that, we need to extract the features of the image and get the generated text as a result, so we need to combine both computer vision and natural language processing.
 
 ## **Installation**
-
+---
 ### **Create the virtual environment**
 ```
 python3 -m venv .env
@@ -80,29 +85,56 @@ The dataset is automatically downloaded by the main.py script when you train the
 python dataset/download.py
 ```
 
-## **Experiments**
-### **Attention model**
-This is our baseline model, we used a CNN as the encoder part, in order to get the features of the image. We then used a RNN network for the decoder and we had an Attention layer in between so we focus on specific parts of the image on each timestep.
-#### **Architecture**
-![upc logo](./docs/model1.png)
-![upc logo](./docs/visualize_attention.png)
-#### **Results**
+## **Preprocessing the data**
+---
+As part of our initial work, we had to process the captions and the images of the dataset. That lead us to create our own `Dataset` class, in which we move from the image folder and the captions given by the CSV file to a ready-to-use pair of image/text.
 
-### **Transformer model in the decoder**
+For the images, similar to what we did in the CNN labs we normalized them using the mean and standard deviation used in ImageNet, since our CNNs have been trained in that dataset.
+
+For the captions, we had to tokenize the input. In order to do that we use the `nltk` package
+
+* lowercase
+
+## **Model experimentation**
+---
+### **Recurrent network with attention**
+#### **Architecture**
+This is our baseline model, we first started using a CNN as the image encoder in order to get the features. We used a CNN pretrained on ImageNet, to be more specific, we played around with VGG16 and Resnet50. Similar to what we did in the CNN lab, we froze the convolutional layers of the network and removed the head, so we extract the high level features of the image.
+
+For the decoder part of the network, we used a RNN network and we had an Attention layer in between the encoder and the decoder so we were able to focus on specific parts of the image on each timestep, and that also allowed to us to visualize the attention as you can see in the Results chapter.
+
+![attention architecture](./docs/attention_arch.png)
+#### **Results**
+The results of this first model are pretty decent, as you can see, but it could be highly improved in terms of language understanding. This is why we wanted to improve the decoder part first, which lead us to our next architecture.
+
+![visualize attention](./docs/visualize_attention.png)
+
+### **Transformer decoder**
+#### **Architecture**
 Our next step was to introduce the Transformers architecture within our model. We started with the PyTorch implementation of the Transformer decoder.
 
 The main advantage of using this type of network is that we get rid of the recursive steps we previously had with recurrent neural networks.
-#### **Architecture**
-![upc logo](./docs/transformer.png)
+
+Also, as we seen in our previous model that was based in Attention, it lacks language understanding, this could be solved by adding a multi head attention such as the one that's built-in inside the TransformerDecoder layer.
+![transformer architecture](./docs/transformer_arch.png)
 #### **Results**
 
 ### **Visual Transformers for the encoder**
 Our final step was to introduce the Visual Transformer inside our model, but this time we wanted it to be our encoder, so we get the features of the images from it. Till this point we were using a pretrained convolutional neural network.
 #### **Architecture**
-![upc logo](./docs/vit.png)
+![visual transformer architecture](./docs/vit_arch.png)
 #### **Results**
 
+
+## **Conclusions**
+---
+
+## **Future work**
+---
+* Subwords
+* 
 ## **Authors**
+---
 * Adriá Molero
 * Lucas Werner
 * Pere Pujol
