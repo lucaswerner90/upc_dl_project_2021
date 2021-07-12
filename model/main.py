@@ -66,6 +66,8 @@ class ImageCaptioningModel(nn.Module):
 	def save_model(self,epoch):
 		string_fn='transformer_model_epoch_'+str(epoch)+'.pth'
 		filename = os.path.join('model','trained_models',string_fn)
+		if not os.path.exists(filepath):
+			os.makedirs(filepath)
 		model_state = {
 		'epoch':epoch,
 		'model':self.state_dict()
@@ -132,6 +134,8 @@ class ViTImageCaptioningModel(nn.Module):
 	def save_model(self,epoch):
 		string_fn='ViT_model_epoch_'+str(epoch)+'.pth'
 		filename = os.path.join('model','trained_models',string_fn)
+		if not os.path.exists(filepath):
+			os.makedirs(filepath)
 		model_state = {
 		'epoch':epoch,
 		'model':self.state_dict()
