@@ -97,7 +97,6 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device)
 		target=torch.cat([target,aux],dim=1)
 
 		target_loss=target
-		#target[target==2]=0
 		
 		output = model(img, target[:,:-1])
 		output = rearrange(
@@ -113,10 +112,11 @@ def train_single_epoch(epoch, model, train_loader, optimizer, criterion, device)
 		torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.25)
 		optimizer.step()
 
-		candidate_corpus = torch.argmax(output.transpose(1, 2), dim=-1)
-		reference_corpus = target[...,1:]
+		generated_captions = torch.argmax(output.transpose(1, 2), dim=-1)
+		expected_captions = target[...,1:]
+		generated_captions, expected_captions, images = generated_captions[:16,...], expected_captions[:16,...], img[:16,...]
 				
-		write_on_tensorboard(epoch=epoch*i,model=model,loss=loss.item(),images=img,expected_captions=reference_corpus,generated_captions=candidate_corpus)
+		write_on_tensorboard(epoch=len(train_loader)*(epoch-1)+i,model=model,loss=loss.item(),images=images,expected_captions=expected_captions,generated_captions=generated_captions)
 
 def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, device, log_interval):
 	"""
