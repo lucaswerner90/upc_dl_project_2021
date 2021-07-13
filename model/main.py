@@ -8,7 +8,7 @@ from dataset.vocabulary import Vocabulary
 from model.transformer.decoder import TransformerDecoder
 
 class ImageCaptioningModel(nn.Module):
-	def __init__(self, image_features_dim:int,embed_size:int, vocab:Vocabulary, caption_max_length:int,decoder_num_layers=4):
+	def __init__(self, image_features_dim:int,embed_size:int, vocab:Vocabulary, caption_max_length:int,decoder_num_layers=1):
 		super(ImageCaptioningModel, self).__init__()
 		self.vocab = vocab
 		self.vocab_size = len(self.vocab.word_to_index)
@@ -35,7 +35,7 @@ class ImageCaptioningModel(nn.Module):
 			next_word=self.decoder.forward(image_features,output).argmax(-1)[:,-1]
 			
 			output = torch.cat([output,next_word.unsqueeze(0)],dim=1)
-		return self.vocab.generate_caption(output.squeeze(0))
+		return output.squeeze(0)
 			
 		
 	def inference(self, image):
@@ -104,33 +104,8 @@ class ViTImageCaptioningModel(nn.Module):
 			next_word=self.decoder.forward(image_features,output).argmax(-1)[:,-1]
 			
 			output = torch.cat([output,next_word.unsqueeze(0)],dim=1)
-		return self.vocab.generate_caption(output.squeeze(0))
+		return output.squeeze(0)
 			
-		
-	def inference(self, image):
-		image_features = self.encoder(image)
-		hidden = self.decoder.init_hidden(image.shape[0])
-		
-		if torch.cuda.is_available():
-			word = torch.cuda.IntTensor([self.vocab.word_to_index['<START>']])
-		else:
-			word = torch.tensor(self.vocab.word_to_index['<START>'])
-		sentence = [word.item()]
-		attention_weights=[]
-		for i in range(self.caption_max_length):
-			alphas, weighted_features = self.attention.forward(image_features, hidden)
-			predictions_t, hidden = self.decoder.forward(weighted_features, word, hidden)
-			word = torch.argmax(predictions_t, dim=-1)
-			if word[0].item()==self.vocab.word_to_index['<END>']:
-				break
-			sentence.append(word.item())
-			attention_weights.append(alphas)
-		if torch.cuda.is_available():
-			sentence=torch.cuda.IntTensor(sentence[1:])
-		else:
-			sentence=torch.tensor(sentence[1:])
-		sentence=self.vocab.generate_caption(sentence)
-		return sentence, attention_weights
 
 	def save_model(self,epoch):
 		string_fn='ViT_model_epoch_'+str(epoch)+'.pth'

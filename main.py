@@ -15,15 +15,13 @@ from transformers import ViTFeatureExtractor
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-use_ViT_Enc = True
+use_visual_transformer = True
 
 def main(args):
 
-	if use_ViT_Enc:
-		print("It is using ViT encoder!!!!")
+	if use_visual_transformer:
 		transform = None
 		feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224-in21k')
-
 	else:
 		feature_extractor = None
 		transform = transforms.Compose([
@@ -41,7 +39,7 @@ def main(args):
 								reduce=True, vocab_max_size=args['vocabulary_size'],feature_extractor=feature_extractor)
 
 	# Create the model
-	if use_ViT_Enc:
+	if use_visual_transformer:
 		model = ViTImageCaptioningModel(
 			embed_size=args['embedding_dimension'],
 			vocab = dataset.vocab,

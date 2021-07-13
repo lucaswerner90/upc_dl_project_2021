@@ -54,7 +54,7 @@ class Vocabulary():
     def generate_phrase(self,caption):
         phrase = ' '.join([word for \
             word in self.generate_caption(caption).split() \
-            if (word!='<PAD>') and (word!='<END>') 
+            if (word not in ['<PAD>','<END>','<START>', '.'])
         ])
         return phrase
 

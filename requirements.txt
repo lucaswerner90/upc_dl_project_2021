@@ -7,5 +7,5 @@ pandas==1.2.4
 nltk==3.6.2
 einops==0.3.0
 kaggle==1.5.12
+transformers==4.8.2
 pytest
-transformers

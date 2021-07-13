@@ -16,7 +16,7 @@ class Flickr8kDataset(Dataset):
 
     def __init__(self, dataset_folder,transform=None,reduce=False,vocab_max_size=5000,feature_extractor=None):
         super(Flickr8kDataset, self).__init__()
-        assert not ((feature_extractor!=None and transform!=None)), "Both Feature_extractor and transform cannot be different than None"
+        # assert (feature_extractor!=None) and (transform is None), "Both Feature_extractor and transform cannot be different than None"
         self.feature_extractor = feature_extractor
         self.transform = transform
         self.images_folder = os.path.join(dataset_folder,'Images')

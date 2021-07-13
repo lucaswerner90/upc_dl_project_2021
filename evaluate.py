@@ -49,15 +49,10 @@ def evaluate(model, test_loader, vocab, device, epoch):
 				print(f'Evaluating batch {idx} / {len(test_loader)}...')
 				print(f'Gen example: {example}')
 				print(f'Exp example: {reference}')
-				#string=str(num_img)+'_epoch_'+str(epoch)+'_plot.png'
-				#string_att=str(num_img)+'_epoch_'+str(epoch)+'_plot_att.png'
 			write_on_tensorboard_evaluate(epoch=idx+epoch,expected_captions=target[:,1:], generated_captions=sentences)
-				#Visualization.show_image(img[num_img],title=example,fn=string)
-				#Visualization.plot_attention(img[num_img],sentences[num_img][:-1],attention_w[num_img],fn=string_att)
-				
-				
 
 		return total_loss / (idx+1)
+
 def evaluate_tr(model, test_loader, device, epoch,criterion):
 	model.eval()
 

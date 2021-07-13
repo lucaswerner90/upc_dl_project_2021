@@ -13,7 +13,7 @@ def write_on_tensorboard(epoch:int, model, loss:int, images, expected_captions, 
 	generated_captions = list(map(convert_caption, generated_captions))
 
 	tensorboard_panel.add_sentences_comparison(epoch, expected_captions,generated_captions)
-	#tensorboard_panel.add_images(epoch, images, expected_captions, generated_captions)
+	tensorboard_panel.add_images(epoch, images, expected_captions, generated_captions)
 	tensorboard_panel.add_loss(epoch, loss)
 	#tensorboard_panel.add_model_weights(epoch,model)
     	
