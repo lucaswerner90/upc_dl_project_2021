@@ -93,8 +93,6 @@ For the images, similar to what we did in the CNN labs we normalized them using 
 
 For the captions, we had to tokenize the input. In order to do that we use the `nltk` package
 
-* lowercase
-
 ## **Model experimentation**
 ---
 ### **Recurrent network with attention**
@@ -116,12 +114,29 @@ Our next step was to introduce the Transformers architecture within our model. W
 The main advantage of using this type of network is that we get rid of the recursive steps we previously had with recurrent neural networks.
 
 Also, as we seen in our previous model that was based in Attention, it lacks language understanding, this could be solved by adding a multi head attention such as the one that's built-in inside the TransformerDecoder layer.
+
+In order to train the model we used the next hyperparameters:
+
+| Learning rate | Image filters | Batch size | Embedding size | Decoder attn. heads | Decoder layers
+| ---- | ---- | ---- | ---- | --- | --- |
+| 1e-4 | 512 | 64 | 256 | 4 | 1
+
 ![transformer architecture](./docs/transformer_arch.png)
 #### **Results**
 
 ### **Visual Transformers for the encoder**
-Our final step was to introduce the Visual Transformer inside our model, but this time we wanted it to be our encoder, so we get the features of the images from it. Till this point we were using a pretrained convolutional neural network.
 #### **Architecture**
+Motivated by the good performance that has been obtained on Image classification with the very recent Visual Transformers, in the last step of this project an architecture based on Visual Transformers is assessed. We use this arquitecture to extract features from our images that are then input to the Transformer based decoders that we used in the previous section so removing the the CNN that we have been using till this point.
+As Visual Transformers have proved their competitiveness versus state-of-the-art arquitectures when a large dataset like the Imagenet is used for training, we decided to take advantage of the pre-trained arquitectures that can be downloaded from the Hugging Face website.
+
+For our experiments we used a ViT model pretrained on Imagenet-21K (14 million images, 21.843 classes) at resolution 224x224. This architecture was introduced in the paper [An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale](https://arxiv.org/abs/2010.11929) by Dosovitskiy et al. 
+
+This model gets as imput a number of vectors obtained from the images. These vectors are linear mappings of different patches of the image (16x16 pixels in this case), that have been flattened and positionally encoded.
+
+Input images are first resized to 224x224 size and normalized with mean (0.5, 0.5, 0.5) and standard deviation (0.5, 0.5, 0.5), as this is the preprocessing that was used in pre-training of the model. So, we obtain from the image 14x14 patches of 16x16 pixels each.
+
+The output of the model are the same number of vectors that have passed through 12 self-attention transformer layers. We use these 196 output vectors (14x14) , that are a representation of the images along with the output of the classification token that is usually used in this pre-trained arquitectures is input to our decoder as it can be seen as a representation of an entire image.
+
 ![visual transformer architecture](./docs/vit_arch.png)
 #### **Results**
 
