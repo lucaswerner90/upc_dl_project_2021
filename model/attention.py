@@ -14,7 +14,9 @@ class Attention(nn.Module):
 		self.A = nn.Linear(attention_dim,1)
 	
 	def forward(self, features, hidden_state):
+		
 		u_features = self.U(features.transpose(1,2))
+		hidden_state=hidden_state.to(u_features.device)
 		w_hidden_state = self.W(hidden_state)
 
 		combined_states = torch.tanh(u_features + w_hidden_state.transpose(0,1))

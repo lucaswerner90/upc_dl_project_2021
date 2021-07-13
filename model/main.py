@@ -42,6 +42,7 @@ class ImageCaptioningModel(nn.Module):
 	def inference(self, image):
 		image_features = self.encoder(image)
 		hidden = self.decoder.init_hidden(image.shape[0])
+		hidden = hidden.to(image_features.device)
 		
 		if torch.cuda.is_available():
 			word = torch.cuda.IntTensor([self.vocab.word_to_index['<START>']])

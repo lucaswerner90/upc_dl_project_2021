@@ -47,10 +47,10 @@ def evaluate(model, test_loader, vocab, device, epoch,criterion):
 			if idx % 10 == 0:
 				num_img=random.randint(0,img.shape[0]-1)
 				sentence, attentionw_w_t = model.inference(image=img[num_img].unsqueeze(0))
-				example=' '.join(sentences[num_img])
+				
 				reference=vocab.generate_caption(target[num_img,1:])
 				print(f'Evaluating batch {idx} / {len(test_loader)}...')
-				print(f'Gen example: {example}')
+				print(f'Gen example: {sentence}')
 				print(f'Exp example: {reference}')
 				# string=str(num_img)+'_epoch_'+str(epoch)+'_plot.png'
 				# string_att=str(num_img)+'_epoch_'+str(epoch)+'_plot_att.png'
