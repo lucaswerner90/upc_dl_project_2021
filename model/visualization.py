@@ -20,22 +20,24 @@ class Visualization:
         return img.cpu().numpy().transpose((1, 2, 0))
 
     @staticmethod
-    def show_image(img, title: str, filename: str):
+    def show_image(img, title: str, filename: str, vit:bool=False):
         """Imshow for Tensor."""
 
+        if vit:
         # denormalize
-        img[0] = img[0] * .5
-        img[1] = img[1] * .5
-        img[2] = img[2] * .5
-        img[0] += .5
-        img[1] += .5
-        img[2] += .5
-        # img[0] = img[0] * 0.229
-        # img[1] = img[1] * 0.224
-        # img[2] = img[2] * 0.225
-        # img[0] += 0.485
-        # img[1] += 0.456
-        # img[2] += 0.406
+            img[0] = img[0] * .5
+            img[1] = img[1] * .5
+            img[2] = img[2] * .5
+            img[0] += .5
+            img[1] += .5
+            img[2] += .5
+        else:
+            img[0] = img[0] * 0.229
+            img[1] = img[1] * 0.224
+            img[2] = img[2] * 0.225
+            img[0] += 0.485
+            img[1] += 0.456
+            img[2] += 0.406
 
         image = img.cpu().numpy().transpose((1, 2, 0))
 
