@@ -23,6 +23,7 @@ def split_subsets(dataset,train_percentage=0.8,all_captions=True):
 	"""
 	Performs the split of the dataset into Train and Test
 	"""	
+	np.random.seed(42)
 	if all_captions==True:
 
 		# Get a list of all indexes in the dataset and convert to a numpy array  
@@ -136,5 +137,5 @@ def train(num_epochs, model, train_loader,test_loader, optimizer, criterion, dev
 			scheduler.step()
 			print(f'Scheduler: {scheduler.get_last_lr()[0]} ')
 			if not epoch % log_interval:
-				model.save_model(model, epoch)
+				model.save_model(epoch)
 			val_loss = evaluate_tr(model=model,test_loader=test_loader,device=device,epoch=epoch, criterion=criterion)

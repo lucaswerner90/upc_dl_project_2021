@@ -8,3 +8,4 @@ nltk==3.6.2
 einops==0.3.0
 kaggle==1.5.12
 pytest
+transformers

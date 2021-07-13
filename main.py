@@ -9,33 +9,51 @@ from torchvision import transforms
 from dataset.main import Flickr8kDataset
 from dataset.caps_collate import CapsCollate
 from dataset.download import DownloadDataset
-from model.main import ImageCaptioningModel
+from model.main import ImageCaptioningModel,ViTImageCaptioningModel
 from train import train, split_subsets
+from transformers import ViTFeatureExtractor
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+use_ViT_Enc = True
+
 def main(args):
 
-	transform = transforms.Compose([
-		transforms.ToTensor(),
-		transforms.Resize((args['image_size'], args['image_size'])),
-		# The normalize parameters depends on the model we're gonna use
-		# If we apply transfer learning from a model that used ImageNet, then
-		# we should use the ImageNet values to normalize the dataset.
-		# Otherwise we could just normalize the values between -1 and 1 using the 
-		# standard mean and standard deviation
-		transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-	])
+	if use_ViT_Enc:
+		print("It is using ViT encoder!!!!")
+		transform = None
+		feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224-in21k')
+
+	else:
+		feature_extractor = None
+		transform = transforms.Compose([
+			transforms.ToTensor(),
+			transforms.Resize((args['image_size'], args['image_size'])),
+			# The normalize parameters depends on the model we're gonna use
+			# If we apply transfer learning from a model that used ImageNet, then
+			# we should use the ImageNet values to normalize the dataset.
+			# Otherwise we could just normalize the values between -1 and 1 using the 
+			# standard mean and standard deviation
+			transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+		])
+
 	dataset = Flickr8kDataset(dataset_folder='data', transform=transform,
-								reduce=True, vocab_max_size=args['vocabulary_size'])
+								reduce=True, vocab_max_size=args['vocabulary_size'],feature_extractor=feature_extractor)
 
 	# Create the model
-	model = ImageCaptioningModel(
-		image_features_dim=args['image_features_dimension'],
-		embed_size=args['embedding_dimension'],
-		vocab = dataset.vocab,
-		caption_max_length=args['captions_max_length'],
-	).to(device)
+	if use_ViT_Enc:
+		model = ViTImageCaptioningModel(
+			embed_size=args['embedding_dimension'],
+			vocab = dataset.vocab,
+			caption_max_length=args['captions_max_length'],
+		).to(device)
+	else:
+		model = ImageCaptioningModel(
+			image_features_dim=args['image_features_dimension'],
+			embed_size=args['embedding_dimension'],
+			vocab = dataset.vocab,
+			caption_max_length=args['captions_max_length'],
+		).to(device)
 
 	# Perform the split of the dataset
 	train_split, test_split = split_subsets(dataset,all_captions=True)

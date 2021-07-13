@@ -1,7 +1,7 @@
 from einops import rearrange
 import torchvision.models as models
 import torch.nn as nn
-
+from transformers import ViTModel
 
 class Encoder_VGG16(nn.Module):
     def __init__(self):
@@ -76,3 +76,34 @@ class Encoder_DenseNet(nn.Module):
         features = self.flat(features)
         # (batch_size, 49, 512) or (batch_size, 196, 512)
         return self.relu(features)
+
+class Encoder_ViT_Pretrained(nn.Module):
+#  It takes the model from Huggingface
+#  google/vit-base-patch16-224-in21k
+
+#  Information regarding the classes ViTFeatureExtractor and ViTModel in the following link: 
+# https://huggingface.co/transformers/model_doc/vit.html?highlight=vitfeatureextractor#transformers.ViTFeatureExtractor
+
+    def __init__(self):
+        super(Encoder_ViT_Pretrained, self).__init__()
+
+#        with open("model.pickle", "rb") as f:
+#            self.pretrained_model = pickle.load(f)
+        self.pretrained_model = ViTModel.from_pretrained('google/vit-base-patch16-224-in21k')
+
+#        print(self.pretrained_model)
+
+        # Freeze All layers as they will be used for inference
+        for param in self.pretrained_model.parameters():  
+            param.requires_grad = False
+
+    def forward(self, x):
+        # x dims (batch_size, 3, H=224 , W=224) 
+        outputs = self.pretrained_model(x,output_attentions=None,output_hidden_states=None)
+        last_hidden_states = outputs.last_hidden_state
+        # For an image size of (224x224) --> last_hidden_states (batch_size, 197=vectors, 768=num_features)                    
+
+        # For an image size of (224x224) --> features dims (batch_size, 7x7=49, 512)
+        # Fem traspse perquè encaixi amb el codi que ja teníem    
+    #    return last_hidden_states.transpose(1,2)
+        return last_hidden_states
