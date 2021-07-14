@@ -156,6 +156,9 @@ The output of the model are the same number of vectors that have passed through 
 
 ![visual transformer architecture](./docs/vit_arch.png)
 #### **Results**
+
+Below are shown the loss curves and hyperparameters that worke fine for this model. The layers of the encoder model have been frozen for the training as for the previous experiments with the other models.
+
 ![VIT Results](./docs/resultado_Vit_4layers.jpg)
 #### **Results - Inference catpions**
 ![VIT Inference Caption 1](./docs/examples/vit/vit_1.png)
