@@ -52,7 +52,7 @@ class ImageCaptioningModel(nn.Module):
 		torch.save(model_state, filename)
 
 class ViTImageCaptioningModel(nn.Module):
-	def __init__(self,embed_size:int, vocab:Vocabulary, caption_max_length:int,decoder_num_layers=4):
+	def __init__(self,embed_size:int, vocab:Vocabulary, caption_max_length:int,decoder_num_layers=1):
 		super(ViTImageCaptioningModel, self).__init__()
 		self.vocab = vocab
 		self.vocab_size = len(self.vocab.word_to_index)

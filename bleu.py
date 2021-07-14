@@ -1,12 +1,16 @@
 import numpy as np
 import torch
 import os
+import sacrebleu
 from torchvision import transforms
 from dataset.main import Flickr8kDataset
+from torch.utils.data import DataLoader
 from model.main import ImageCaptioningModel, ViTImageCaptioningModel
 from model.visualization import Visualization
 from transformers import ViTFeatureExtractor
+from dataset.caps_collate import CapsCollate
 from PIL import Image
+from train import split_subsets
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 device = "cpu"
 
@@ -62,25 +66,22 @@ model.eval()
 
 
 np.random.seed(42)
-#images_selected = np.random.randint(0,len(dataset),size=50)
-#images_list = [dataset[i][0] for i in images_selected ]
-images_list = ['54501196_a9ac9d66f2.jpg', '99171998_7cc800ceef.jpg', '140526327_3cb984de09.jpg', '265223843_9ef21e1872.jpg', '3048597471_5697538daf.jpg', '1771490732_0ab5f029ac.jpg']
 
-for index,images in enumerate(images_list):
+train_split, test_split = split_subsets(dataset,all_captions=True)
 
-	#obtain index
-	#indexx=[i for i,e in enumerate(dataset.dataframe.image) if e==images]
-	#indexx=int(indexx[0]/5)
-	image=dataset.read_image(images)
-	if generate_for_vit:
-		image=feature_extractor(images=image,return_tensors="pt").data['pixel_values'].squeeze()
-	else:
-		image=dataset.transform(image)
+test_loader = DataLoader(test_split, shuffle=False, batch_size=1, collate_fn=CapsCollate(
+		pad_idx=dataset.vocab.word_to_index['<PAD>'], batch_first=True))
+
+refs=[]
+preds=[]
+for i,batch in enumerate(test_loader):
+	img, target= batch
 	
-	caption = model.generate(image.unsqueeze(0))
-	if generate_for_vit:
-		filename = os.path.join(os.getcwd(),'generated_images','vit',f'vit_{index}.png')
-		Visualization.show_image(image, model.vocab.generate_phrase(caption), filename, True)
-	else:
-		filename = os.path.join(os.getcwd(),'generated_images','transformer',f'transformer_{index}.png')
-		Visualization.show_image(image, model.vocab.generate_phrase(caption), filename)
+
+	refs.append(model.vocab.generate_caption(target[:,1:-1].squeeze(0)).strip().split())
+	caption = model.generate(img)
+	preds.append(model.vocab.generate_caption(model.generate(img)[1:]).strip().split())
+refs=[refs]
+
+bleu = sacrebleu.corpus_bleu(preds,refs)
+print(bleu.score)
