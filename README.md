@@ -101,7 +101,7 @@ This is our baseline model, we first started using a CNN as the image encoder in
 
 For the decoder part of the network, we used a RNN network and we had an Attention layer in between the encoder and the decoder so we were able to focus on specific parts of the image on each timestep, and that also allowed to us to visualize the attention as you can see in the Results chapter.
 
-![attention architecture](./docs/attention_arch.png)
+![attention architecture](./docs/attention_arch.jpg)
 #### **Results**
 The results of this first model are pretty decent, as you can see, but it could be highly improved in terms of language understanding. This is why we wanted to improve the decoder part first, which lead us to our next architecture.
 
