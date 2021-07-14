@@ -107,6 +107,8 @@ The results of this first model are pretty decent, as you can see, but it could 
 
 ![visualize attention](./docs/visualize_attention.png)
 
+#### **Results - Inference catpions**
+![RNN Inference Caption 1](./docs/examples/vit/vit_0.png)
 ### **Transformer decoder**
 #### **Architecture**
 Our next step was to introduce the Transformers architecture within our model. We started with the PyTorch implementation of the Transformer decoder.
@@ -140,6 +142,8 @@ The output of the model are the same number of vectors that have passed through 
 ![visual transformer architecture](./docs/vit_arch.png)
 #### **Results**
 
+#### **Results - Inference catpions**
+![VIT Inference Caption 1](./docs/examples/vit/vit_0.png)
 
 ## **Conclusions**
 ---
