@@ -27,7 +27,7 @@
   - [## **Authors**](#-authors)
 ## **Description**
 ---
-The following project shows an image captioning system that uses state-of-the-art architectures in DL and AI such as Transformers and Visual Transformers.
+The following project shows an image captioning system that uses state-of-the-art architectures in DL and AI such as Transformers and Visual Transformers in comparison to RNN arquitecture that is used as baseline.
 
 The goal of the project is to generate an accurate description given an input image, for that, we need to extract the features of the image and get the generated text as a result, so we need to combine both computer vision and natural language processing.
 
@@ -77,7 +77,7 @@ Additionally, you can specify these parameters:
 ### **Download the dataset (optional)**
 
 The dataset used during the training phase is the [Flickr8k](https://www.kaggle.com/adityajn105/flickr8k/).
-It consists of 8,000 images that are each paired with five different captions which provide clear descriptions of the salient entities and events. The images were chosen from six different Flickr groups, and tend not to contain any well-known people or locations, but were manually selected to depict a variety of scenes and situations.
+It consists of 8,091 images that are each paired with five different captions which provide clear descriptions of the salient entities and events. The images were chosen from six different Flickr groups, and tend not to contain any well-known people or locations, but were manually selected to depict a variety of scenes and situations.
 
 The dataset is automatically downloaded by the main.py script when you train the model, but if you want to download it by yourself, you can execute the next script:
 
@@ -103,12 +103,21 @@ For the decoder part of the network, we used a RNN network and we had an Attenti
 
 ![attention architecture](./docs/attention_arch.jpg)
 #### **Results**
+Below it is shown the loss curves when training the model. We took the model at the 6th epoch since from then it started to overfit.
+
+![visualize attention](./docs/resultado_CNN-RNN.jpg)
+
 The results of this first model are pretty decent, as you can see, but it could be highly improved in terms of language understanding. This is why we wanted to improve the decoder part first, which lead us to our next architecture.
 
 ![visualize attention](./docs/visualize_attention.png)
 
-#### **Results - Inference catpions**
-![RNN Inference Caption 1](./docs/examples/vit/Rnn_0.png)
+#### **Results - Inference captions**
+In this section we show few examples of images with their corresponding generated caption. As there is not an specific well suited metric for the task of image captioning, the best way to really evaluate the performance of a system in this task is to manually evaluate the generated captions. 
+
+
+![RNN Inference Caption 1](./docs/examples/rnn/img_1.jpg)
+![RNN Inference Caption 2](./docs/examples/rnn/img_2.jpg)
+![RNN Inference Caption 3](./docs/examples/rnn/img_3.jpg)
 ### **Transformer decoder**
 #### **Architecture**
 Our next step was to introduce the Transformers architecture within our model. We started with the PyTorch implementation of the Transformer decoder.
@@ -124,7 +133,13 @@ In order to train the model we used the next hyperparameters:
 | 1e-4 | 512 | 64 | 256 | 4 | 1
 
 ![transformer architecture](./docs/transformer_arch.jpg)
-#### **Results**
+
+#### **Results - Inference catpions**
+Below are the some inference captions obtainted with the above model. The sentences are gramatically correct although in some cases they don't describe correctly the images
+
+![VIT Inference Caption 1](./docs/examples/transformer/transformer_0.png)
+![VIT Inference Caption 2](./docs/examples/transformer/transformer_1.png)
+![VIT Inference Caption 3](./docs/examples/transformer/transformer_2.png)
 
 ### **Visual Transformers for the encoder**
 #### **Architecture**
@@ -141,19 +156,30 @@ The output of the model are the same number of vectors that have passed through 
 
 ![visual transformer architecture](./docs/vit_arch.png)
 #### **Results**
-![VIT Results](./docs/examples/vit/resultado_Vit_4layers.jpg)
+![VIT Results](./docs/resultado_Vit_4layers.jpg)
 #### **Results - Inference catpions**
 ![VIT Inference Caption 1](./docs/examples/vit/vit_1.png)
 ![VIT Inference Caption 2](./docs/examples/vit/vit_2.png)
 ![VIT Inference Caption 3](./docs/examples/vit/vit_4.png)
 
+
+## **Comparison between models**
+
+![Comparativa 1](./docs/examples/comparativa/Comparativa_1.jpg)
+![Comparativa 2](./docs/examples/comparativa/Comparativa_2.jpg)
+
 ## **Conclusions**
 ---
+* RNN+Attention does a good job but Transformers arquitecture model language better (gramatically better sentences)
+* Similar eval loss does not imply better performance at our task
 
 ## **Future work**
 ---
+* Finetuning of models and more hyperparam sweep 
+* Transformer model attention
+* Fleiss Kappa evaluation
 * Subwords
-* 
+
 ## **Authors**
 ---
 * Adriá Molero
