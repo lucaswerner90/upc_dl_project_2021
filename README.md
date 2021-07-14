@@ -141,7 +141,7 @@ The output of the model are the same number of vectors that have passed through 
 
 ![visual transformer architecture](./docs/vit_arch.png)
 #### **Results**
-![VIT Results](./docs/examples/vit/resultado_Vit_4layers.png)
+![VIT Results](./docs/examples/vit/resultado_Vit_4layers.jpg)
 #### **Results - Inference catpions**
 ![VIT Inference Caption 1](./docs/examples/vit/vit_1.png)
 ![VIT Inference Caption 2](./docs/examples/vit/vit_2.png)
