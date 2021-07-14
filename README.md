@@ -121,7 +121,7 @@ In order to train the model we used the next hyperparameters:
 | ---- | ---- | ---- | ---- | --- | --- |
 | 1e-4 | 512 | 64 | 256 | 4 | 1
 
-![transformer architecture](./docs/transformer_arch.png)
+![transformer architecture](./docs/transformer_arch.jpg)
 #### **Results**
 
 ### **Visual Transformers for the encoder**
