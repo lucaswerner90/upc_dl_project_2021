@@ -101,12 +101,14 @@ This is our baseline model, we first started using a CNN as the image encoder in
 
 For the decoder part of the network, we used a RNN network and we had an Attention layer in between the encoder and the decoder so we were able to focus on specific parts of the image on each timestep, and that also allowed to us to visualize the attention as you can see in the Results chapter.
 
-![attention architecture](./docs/attention_arch.png)
+![attention architecture](./docs/attention_arch.jpg)
 #### **Results**
 The results of this first model are pretty decent, as you can see, but it could be highly improved in terms of language understanding. This is why we wanted to improve the decoder part first, which lead us to our next architecture.
 
 ![visualize attention](./docs/visualize_attention.png)
 
+#### **Results - Inference catpions**
+![RNN Inference Caption 1](./docs/examples/vit/Rnn_0.png)
 ### **Transformer decoder**
 #### **Architecture**
 Our next step was to introduce the Transformers architecture within our model. We started with the PyTorch implementation of the Transformer decoder.
@@ -121,7 +123,7 @@ In order to train the model we used the next hyperparameters:
 | ---- | ---- | ---- | ---- | --- | --- |
 | 1e-4 | 512 | 64 | 256 | 4 | 1
 
-![transformer architecture](./docs/transformer_arch.png)
+![transformer architecture](./docs/transformer_arch.jpg)
 #### **Results**
 
 ### **Visual Transformers for the encoder**
@@ -139,7 +141,11 @@ The output of the model are the same number of vectors that have passed through 
 
 ![visual transformer architecture](./docs/vit_arch.png)
 #### **Results**
-
+![VIT Results](./docs/examples/vit/resultado_Vit_4layers.jpg)
+#### **Results - Inference catpions**
+![VIT Inference Caption 1](./docs/examples/vit/vit_1.png)
+![VIT Inference Caption 2](./docs/examples/vit/vit_2.png)
+![VIT Inference Caption 3](./docs/examples/vit/vit_4.png)
 
 ## **Conclusions**
 ---
